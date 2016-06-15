@@ -10,8 +10,8 @@ import numpy as np
 from windspharm.standard import VectorWind
 from windspharm.tools import prep_data, recover_data, order_latdim
 
-fin = "wnd300.mnth.erain.nc"
-fout = "sf300.mnth.erain.nc"
+fin = "../data/wnd300.mnth.erain.nc"
+fout = "../data/sf300.mnth.erain.nc"
 
 
 dimnam=('longitude','latitude','time')
@@ -24,7 +24,6 @@ uwnd = nc.variables['u'][:]
 vwnd = nc.variables['v'][:]
 lons = nc.variables[dimnam[0]][:]
 lats = nc.variables[dimnam[1]][:]
-nc.close()
 #ncv = Dataset('wnd.mnth.eraint.nc), 'r')
 #vwnd = ncv.variables['vwnd'][:]
 #ncv.close()
@@ -88,7 +87,7 @@ ncout.variables[dimnam[0]][:] = lons
 for name in nc.ncattrs():
      print "Global attr", name, "=", getattr(nc,name)
 
-print("spat'")
 #print(nc.variables['latitude'].ncattrs())
 
+nc.close()
 ncout.close()
