@@ -90,7 +90,7 @@ ncout.variables[dimnam[0]][:] = lons
 for name in nc.ncattrs():
      print "Global attr", name, "=", getattr(nc,name)
 
-
+print("spat'")
 #print(nc.variables['latitude'].ncattrs())
 
 ncout.close()
