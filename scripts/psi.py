@@ -20,20 +20,26 @@ varnam=['longitude','latitude','time','u','v']
 # module. The components are defined on pressure levels and are in separate
 # files.
 nc = Dataset(fin, 'r')
-print(varnam)
 v=0
 for var in varnam:
-    print 'var=', var
-    if nc.variables[varnam[v]].name == var:
-        print "ok"
+    if nc.variables[varnam[v]].name != var:
+        print "Variables don't agree", var, nc.variables[varnam[v]].name, v
+        exit()
     v += 1
 
-
+lons = nc.variables[varnam[0]][:]
+lats = nc.variables[varnam[1]][:]
+time = nc.variables[varnam[2]][:]
 uwnd = nc.variables[varnam[3]][:]
 vwnd = nc.variables[varnam[4]][:]
-lons = nc.variables[dimnam[0]][:]
-lats = nc.variables[dimnam[1]][:]
-time = nc.variables[dimnam[2]][:]
+
+
+
+#uwnd = nc.variables[varnam[3]][:]
+#vwnd = nc.variables[varnam[4]][:]
+#lons = nc.variables[dimnam[0]][:]
+#lats = nc.variables[dimnam[1]][:]
+#time = nc.variables[dimnam[2]][:]
 #ncv = Dataset('wnd.mnth.eraint.nc), 'r')
 #vwnd = ncv.variables['vwnd'][:]
 #ncv.close()
@@ -83,25 +89,21 @@ ncout.createDimension(dimnam[0], lons.size)
 ncout.createDimension(dimnam[1], lats.size)
 ncout.createDimension(dimnam[2], None)
 
-for nd in range(0, 3) :
-    ncout_var = ncout.createVariable(dimnam[nd], nc.variables[dimnam[nd]].dtype,dimnam[nd])
-    print 'nd=', nd
-    print ncout_var
-    for ncattr in nc.variables[dimnam[nd]].ncattrs():
-        ncout_var.setncattr(ncattr, nc.variables[varnam[nd]].getncattr(ncattr))
-
+for nv in range(0, 3) :
+    ncout_var = ncout.createVariable(varnam[nv], nc.variables[varnam[nv]].dtype,dimnam[nv])
+    for ncattr in nc.variables[varnam[nv]].ncattrs():
+        ncout_var.setncattr(ncattr, nc.variables[varnam[nv]].getncattr(ncattr))
 
 ncout.variables[dimnam[0]][:] = lons
 ncout.variables[dimnam[1]][:] = lats
 ncout.variables[dimnam[2]][:] = time
-#nc_dim = fid.createVariable('time', fout_id.variables['time'].dtype,\
-#                                   ('time',))
+
+ncout_var = ncout.createVariable('sf', 'f',dimnam[::-1])
+
 
 #ncatt = nc.ncattrs()
 #print(ncatt)
 
-for name in nc.ncattrs():
-     print "Global attr", name, "=", getattr(nc,name)
 
 #print(nc.variables['latitude'].ncattrs())
 
