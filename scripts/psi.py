@@ -6,7 +6,6 @@
 #import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import numpy as np
-
 from windspharm.standard import VectorWind
 from windspharm.tools import prep_data, recover_data, order_latdim
 
@@ -15,15 +14,26 @@ fout = "../data/sf300.mnth.erain.nc"
 
 
 dimnam=('longitude','latitude','time')
+varnam=['longitude','latitude','time','u','v']
 
 # Read zonal and meridional wind components from file using the netCDF4
 # module. The components are defined on pressure levels and are in separate
 # files.
 nc = Dataset(fin, 'r')
-uwnd = nc.variables['u'][:]
-vwnd = nc.variables['v'][:]
+print(varnam)
+v=0
+for var in varnam:
+    print 'var=', var
+    if nc.variables[varnam[v]].name == var:
+        print "ok"
+    v += 1
+
+
+uwnd = nc.variables[varnam[3]][:]
+vwnd = nc.variables[varnam[4]][:]
 lons = nc.variables[dimnam[0]][:]
 lats = nc.variables[dimnam[1]][:]
+time = nc.variables[dimnam[2]][:]
 #ncv = Dataset('wnd.mnth.eraint.nc), 'r')
 #vwnd = ncv.variables['vwnd'][:]
 #ncv.close()
@@ -73,11 +83,17 @@ ncout.createDimension(dimnam[0], lons.size)
 ncout.createDimension(dimnam[1], lats.size)
 ncout.createDimension(dimnam[2], None)
 
+for nd in range(0, 3) :
+    ncout_var = ncout.createVariable(dimnam[nd], nc.variables[dimnam[nd]].dtype,dimnam[nd])
+    print 'nd=', nd
+    print ncout_var
+    for ncattr in nc.variables[dimnam[nd]].ncattrs():
+        ncout_var.setncattr(ncattr, nc.variables[varnam[nd]].getncattr(ncattr))
 
-ncout_var = ncout.createVariable(dimnam[0], nc.variables[dimnam[0]].dtype,dimnam[0])
-for ncattr in nc.variables[dimnam[0]].ncattrs():
-    ncout_var.setncattr(ncattr, nc.variables[dimnam[0]].getncattr(ncattr))
+
 ncout.variables[dimnam[0]][:] = lons
+ncout.variables[dimnam[1]][:] = lats
+ncout.variables[dimnam[2]][:] = time
 #nc_dim = fid.createVariable('time', fout_id.variables['time'].dtype,\
 #                                   ('time',))
 
