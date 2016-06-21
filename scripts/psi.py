@@ -59,18 +59,18 @@ vwnd, vwnd_info = prep_data(vwnd, 'tyx')
 
 # It is also required that the latitude dimension is north-to-south. Again the
 # bundled tools make this easy.
-#lats, uwnd, vwnd = order_latdim(lats, uwnd, vwnd)
+lats, uwnd, vwnd = order_latdim(lats, uwnd, vwnd)
 
 # Create a VectorWind instance to handle the computation of streamfunction and
 # velocity potential.
-#w = VectorWind(uwnd, vwnd)
+w = VectorWind(uwnd, vwnd)
 
 # Compute the streamfunction and velocity potential. Also use the bundled
 # tools to re-shape the outputs to the 4D shape of the wind components as they
 # were read off files.
-#sf, vp = w.sfvp()
-#sf = recover_data(sf, uwnd_info)
-#vp = recover_data(vp, uwnd_info)
+sf, vp = w.sfvp()
+sf = recover_data(sf, uwnd_info)
+vp = recover_data(vp, uwnd_info)
 
 #print sf.shape
 #print sf[1,1,1]
@@ -93,19 +93,23 @@ for nv in range(0, 3) :
     ncout_var = ncout.createVariable(varnam[nv], nc.variables[varnam[nv]].dtype,dimnam[nv])
     for ncattr in nc.variables[varnam[nv]].ncattrs():
         ncout_var.setncattr(ncattr, nc.variables[varnam[nv]].getncattr(ncattr))
+#print(nc.variables['latitude'].ncattrs())
 
 ncout.variables[dimnam[0]][:] = lons
 ncout.variables[dimnam[1]][:] = lats
 ncout.variables[dimnam[2]][:] = time
 
-ncout_var = ncout.createVariable('sf', 'f',dimnam[::-1])
+ncout_sf = ncout.createVariable('sf', 'f',dimnam[::-1])
+ncout_sf.long_name = 'streamfunction'
+sf_scale = 1.e+7
+sf_add   = 0.
+ncout_sf.scale_factor = sf_scale
+ncout_sf.add_offset   = sf_add
+ncout_sf.units        = 'm**2 s**-1'
 
+#ncout_sf[:] = (sf-sf_add)/sf_scale
+ncout_sf[:] = sf
 
-#ncatt = nc.ncattrs()
-#print(ncatt)
-
-
-#print(nc.variables['latitude'].ncattrs())
 
 nc.close()
 ncout.close()
