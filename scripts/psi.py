@@ -107,7 +107,8 @@ ncout_sf.scale_factor = sf_scale
 ncout_sf.add_offset   = sf_add
 ncout_sf.units        = 'm**2 s**-1'
 
-#ncout_sf[:] = (sf-sf_add)/sf_scale
+#!!!automatically takes scale and offset into account
+#!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
 ncout_sf[:] = sf
 
 
