@@ -73,7 +73,7 @@ Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
           ,length(frcy),length(frcx));
-  break
+  %break
 end
 
 %% Eli: specify periods (use Inf for a zero frequency):
@@ -125,7 +125,7 @@ jmax=69;
 
 
 %% save parameters to be read by plot_rays.m:
-save('output/parameters.mat','k_wavenumbers','Nsteps'...
+save('../output/parameters.mat','k_wavenumbers','Nsteps'...
      ,'frcx','frcy','frequencies','do_complex_tracing');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,27 +162,27 @@ save('output/parameters.mat','k_wavenumbers','Nsteps'...
 %         'pressure/uwnd.mon.mean.nc'];
 %fin   = ftp(fdata);
 
-fuwnd     = 'data/uwnd.mon.mean.nc';
+fuwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fuwnd,'NC_NOWRITE' );
 level     = netcdf.getVar (ncid,0);
 lev       = find(level==200);
 [name,type,dimids,natts] = netcdf.inqVar(ncid,4);
-if(name=='uwnd'); 
+if(name=='u'); 
     uwnd     = netcdf.getVar (ncid,4);   
     u = squeeze(uwnd(:,:,lev,:));
      display(['size of uwnd = ',sprintf(' %d',size(u))]);
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,1);
-if(name=='lat' | name=='latitude'); 
+if(name == 'latitude'); 
     lat     = netcdf.getVar (ncid,1);   
      display(['size of lat = ',sprintf(' %d',size(lat))]);
 else
     disp('Check lat');
     exit
 end;
-[name,type,dimids,natts] = netcdf.inqVar(ncid,2);
-if(name=='lon' | name=='longitude'); 
-    lon     = netcdf.getVar (ncid,2);   
+[name,type,dimids,natts] = netcdf.inqVar(ncid,0);
+if(name == 'longitude'); 
+    lon     = netcdf.getVar (ncid,0);   
      display(['size of lon = ',sprintf(' %d',size(lon))]);
 else
     disp('Check lon');
@@ -191,15 +191,15 @@ end;
 
 
 
-fvwnd     = 'data/vwnd.mon.mean.nc';
+fvwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fvwnd,'NC_NOWRITE' );
 [name,type,dimids,natts] = netcdf.inqVar(ncid,4);
-if(name=='vwnd'); 
+if(name=='v'); 
     vwnd     = netcdf.getVar (ncid,4);   
     v = squeeze(vwnd(:,:,lev,:));
 end;
 
-fpsi      = 'output/sf300.nc' ;
+fpsi      = '../data/sf300.mnth.erain.nc' ;
 ncid      = netcdf.open ( fpsi,'NC_NOWRITE' );
 [name,type,dimids,natts] = netcdf.inqVar(ncid,3);
 if(name=='sf'); 
