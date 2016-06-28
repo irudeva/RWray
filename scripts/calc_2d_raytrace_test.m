@@ -274,7 +274,7 @@ xx=r*x*pi/180;
 yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
 
 %%%%%%%%%%%%%%%%%%%%%%%
-%%%%  Taking the 200 mbar fields
+%%%%  Taking the wind/psi fields
 
 %% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
