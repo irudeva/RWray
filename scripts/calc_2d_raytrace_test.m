@@ -275,9 +275,9 @@ psi0=(squeeze(psi(:,:,nt)))';
 %%%%  Smoothing the fields
 
 if do_smooth_background_fields
-  u0=zfltr(u200,1,10,1);
-  v0=zfltr(v200,1,10,1);
-  psi0=zfltr(psi200,1,10,1);
+  u0=zfltr(u0,1,10,1);
+  v0=zfltr(v0,1,10,1);
+  psi0=zfltr(psi0,1,10,1);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
