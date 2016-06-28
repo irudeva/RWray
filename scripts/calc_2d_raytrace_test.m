@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[154];
-frcy=[97];
+frcx=[154 0];
+frcy=[97 45];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -79,7 +79,7 @@ end
 %% Eli: specify periods (use Inf for a zero frequency):
 day=86400;
 %Periods=[-20]*day;
-Periods=[-80 -60 -40 -20 Inf 20 40 60 80]*day;
+Periods=[ -60 -30 Inf 30 60 ]*day;
 frequencies=2*pi./Periods;
 Nfrequencies=length(frequencies);
 
@@ -88,10 +88,11 @@ k_wavenumbers=[1 2 3 4 5];
 %k_wavenumbers=[2];
 
 %% time step: make sure results are robust to halving the time step:
-dt=900;
+%dt=900;     %15 min
+dt=3600*6;  %6 hours
 
 %% integration duration (in hours):
-integration_time=200;
+integration_time=24*30;
 
 Nsteps=round(integration_time*3600/dt);
 
@@ -132,36 +133,6 @@ save('../output/parameters.mat','k_wavenumbers','Nsteps'...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ENd of required input: %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%% Eli: changed from loaddods to loaddap:    /Ira: removed
-%if use_climatology
-%  loaddap(['http://iridl.ldeo.columbia.edu/expert/SOURCES/.NOAA/' ...
-%           '.NCEP-NCAR/.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/' ...
-%           '.psi/P/%28200%29VALUES/T/%28Sep%29VALUES%5BT%5Daverage/dods']);
-
-%  loaddap(['http://iridl.ldeo.columbia.edu/expert/SOURCES/.NOAA/' ...
-%           '.NCEP-NCAR/.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/' ...
-%           '.u/P/%28200%29VALUES/T/%28Sep%29VALUES%5BT%5Daverage/dods']);
-
-%  loaddap(['http://iridl.ldeo.columbia.edu/expert/SOURCES/.NOAA/' ...
-%           '.NCEP-NCAR/.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/' ...
-%           '.v/P/%28200%29VALUES/T/%28Sep%29VALUES%5BT%5Daverage/dods']);
-%else
-%  loaddap(['http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP-NCAR/' ...
-%           '.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/.u/T/' ...
-%           '%28Jan%201998%29VALUES/P/%28200%29VALUES/dods']);
-%  loaddap(['http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP-NCAR/' ...
-%           '.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/.v/T/' ...
-%           '%28Jan%201998%29VALUES/P/%28200%29VALUES/dods']);
-%  loaddap(['http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP-NCAR/' ...
-%           '.CDAS-1/.MONTHLY/.Intrinsic/.PressureLevel/.psi/T/' ...
-%           '%28Jan%201998%29VALUES/P/%28200%29VALUES/dods']);
-%end
-
-%fdata = ['ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/' ...
-%         'pressure/uwnd.mon.mean.nc'];
-%fin   = ftp(fdata);
 
 fuwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fuwnd,'NC_NOWRITE' );
@@ -556,7 +527,7 @@ for ilocation=1:Nlocations
         %%  Starting the loop with the above initial k,l, and Ks
         
         for t=1:Nsteps
-          if rem(t,60)==0
+          if rem(t,10)==0
             fprintf(1,'t = %g\n',t);
           end
           
@@ -656,21 +627,24 @@ for ilocation=1:Nlocations
           rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           
-          if rem(t,5)==0
-            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
+          if rem(t,4)==0
+%            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
+            alL(t/4,:)=[t/4 loc(t,:)];
 %             disp(alL);
 %             exit
             %% Eli: moved output files to subdirectory:
 %             eval(sprintf('save output/raypath_k%d_period%d_location%d_root%d alL -ascii -tabs'...
 %                          ,kk,period,ilocation,RR));
+          end
+        end
             fn_out = sprintf('../output/raypath_k%d_period%d_location%d_root%d'...
                          ,kk,period,ilocation,RR);
             dlmwrite(fn_out, alL,'precision', '%.6f');
 %             eval(sprintf('dlmwrite output/raypath_k%d_period%d_location%d_root%d alL'...
 %                          ,kk,period,ilocation,RR));
-          end
+%%          end
           
-        end
+%%        end
       end % end do loop over roots
     end % end do loop over wavenumbers
   end % end do loop over frequencies
