@@ -95,7 +95,8 @@ integration_time=200;
 
 Nsteps=round(integration_time*3600/dt);
 
-fprintf(1,'calc_2d_raytrace.m run parameters: \n');
+fprintf(1,'calc_2d_raytrace.m run parameters:');
+%fprintf(1,'calc_2d_raytrace.m run parameters: \n');
 k_wavenumbers,Periods/day,Nlocations,frcx,frcy,dt,Nsteps
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,12 +171,14 @@ varid     = 3;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='u'); 
     uwnd     = netcdf.getVar (ncid,varid);   
-    u = squeeze(uwnd(:,:,lev,:));
+    %u = squeeze(uwnd(:,:,lev,:));
+    u = uwnd;
      display(['size of uwnd (',name,') = ',sprintf(' %d',size(u))]);
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,1);
 if(name == 'latitude'); 
-    lat     = netcdf.getVar (ncid,1);   
+    lat     = netcdf.getVar (ncid,1);
+    latin   = lat;
      display(['size of lat = ',sprintf(' %d',size(lat))]);
 else
     disp('Check lat');
@@ -183,10 +186,19 @@ else
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,0);
 if(name == 'longitude'); 
-    lon     = netcdf.getVar (ncid,0);   
+    lon     = netcdf.getVar (ncid,0);
+    lonin   = lon;
      display(['size of lon = ',sprintf(' %d',size(lon))]);
 else
     disp('Check lon');
+    exit
+end;
+[name,type,dimids,natts] = netcdf.inqVar(ncid,2);
+if(name == 'time'); 
+    time     = netcdf.getVar (ncid,2);
+     display(['size of time = ',sprintf(' %d',size(time))]);
+else
+    disp('Check time');
     exit
 end;
 
@@ -198,8 +210,9 @@ varid     = 4;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='v'); 
     vwnd     = netcdf.getVar (ncid,4);   
-    v = squeeze(vwnd(:,:,lev,:));
-    display(['size of vwnd (',name,') = ',sprintf(' %d',size(v))]);
+    %v = squeeze(vwnd(:,:,lev,:));
+    v = vwnd;
+     display(['size of vwnd (',name,') = ',sprintf(' %d',size(v))]);
 end;
 
 fpsi      = '../data/sf300.mnth.erain.nc' ;
@@ -214,6 +227,21 @@ end;
 
 disp('done getting data.');
 
+%%%% Time
+
+hoursPerDay = 24.;
+TIMEbase = datenum(1900, 1, 1);
+date = datestr(double(time/hoursPerDay) + TIMEbase);
+mydate = '01-Sep-2014';
+ display(['My    date: ',mydate])
+for t = 1:size(time,1)
+ date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
+ if date == '01-Sep-2014'
+    display(['Found date: ',date])
+    nt  = t;
+ end
+end
+%nt=find(datestr(double(time/hoursPerDay) + TIMEbase) == '01-Sep-2014')
 
 %%%  Other
 
@@ -238,18 +266,18 @@ yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
 
 %% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
-u200=(squeeze(u(:,:,800)))';
+u0=(squeeze(u(:,:,nt)))';
 [m,n]=size(u200);
-v200=(squeeze(v(:,:,1)))';
-psi200=(squeeze(psi(:,:,1)))';
+v0=(squeeze(v(:,:,nt)))';
+psi0=(squeeze(psi(:,:,nt)))';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Smoothing the fields
 
 if do_smooth_background_fields
-  u200=zfltr(u200,1,10,1);
-  v200=zfltr(v200,1,10,1);
-  psi200=zfltr(psi200,1,10,1);
+  u0=zfltr(u200,1,10,1);
+  v0=zfltr(v200,1,10,1);
+  psi0=zfltr(psi200,1,10,1);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -257,9 +285,9 @@ end
 
 %%%  Ks= {[2*omega - ((1/cos(lat))(d/d(lat))^2)*((1+cos2*Lat)/2)*U]/U}^0.5
 
-UbarM=u200./cos(Lat);
-VbarM=v200./cos(Lat);
-PsiM=psi200./cos(Lat);
+UbarM=u0./cos(Lat);
+VbarM=v0./cos(Lat);
+PsiM=psi0./cos(Lat);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for BetaM; NOTE that cos2(Lat)=(1+cos(2*Lat))/2
