@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[154 0];
-frcy=[97 45];
+frcx=[154 1];
+frcy=[97 15];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -434,7 +434,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for ilocation=1:Nlocations
+for ilocation=2:Nlocations
 
   frx=frcx(ilocation);
   fry=frcy(ilocation);
