@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/l%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Calculate 2d Barotropic Rossby ray paths over specified
 %%  background fields.
 %%  Written by Jeff Shaman.
@@ -314,12 +314,12 @@ trm1=a*b/r;
 c=b.*UbarM;
 d=1./b;
 cdy=c;cdy2=c;
-for i=2:nlat-1
+for i=2:nlat
   cdy(i,:)=(mean(c(i-1:i,:))-mean(c(i:i+1,:)))/(mean(yy(i-1:i))- ...
                                                 mean(yy(i:i+1)));
 end
 cdy=cdy.*d;
-for i=3:nlat-2
+for i=3:71
   cdy2(i,:)=(mean(cdy(i-1:i,:))-mean(cdy(i:i+1,:)))/(mean(yy(i- ...
                                                     1:i))-mean(yy(i:i+1)));
 end
@@ -330,29 +330,29 @@ BetaM=trm1-cdy2;
 %%%%  Solving for qbar
 %%%%  The larger structure is to make sure have entire zonal field
 
-tempPSI=[PsiM(:,nlon-3:nlon) PsiM PsiM(:,1:4)];
-tempxx=[xx(nlon-3:nlon) xx xx(1:4)];
+tempPSI=[PsiM(:,nlon-1:nlon) PsiM PsiM(:,1:4)];
+tempxx=[xx(nlon-1:nlon) xx xx(1:4)];
 
 px1=tempPSI;px2=px1;py1=px1;py2=px1;
-for i=2:nlat-1
+for i=2:nlat
   py1(i,:)=(mean(tempPSI(i-1:i,:))-mean(tempPSI(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
-for i=3:nlat-2
+for i=3:71
   py2(i,:)=(mean(py1(i-1:i,:))-mean(py1(i:i+1,:)))/(mean(yy(i-1: ...
                                                     i))-mean(yy(i:i+1)));
 end
-for i=2:nlon+7
+for i=2:151
   px1(:,i)=(mean(tempPSI(:,i-1:i)')'-mean(tempPSI(:,i:i+1)')')/ ...
            (mean(tempxx(i-1:i))-mean(tempxx(i:i+1)));
 end
-for i=3:nlon+6
+for i=3:150
   px2(:,i)=(mean(px1(:,i-1:i)')'-mean(px1(:,i:i+1)')')/ ...
            (mean(tempxx(i-1:i))-mean(tempxx(i:i+1)));
 end
 
-dd=[d(:,nlon-3:nlon) d d(:,1:4)];
-tempf=[f(:,nlon-3:nlon) f f(:,1:4)];
+dd=[d(:,nlon-1:nlon) d d(:,1:4)];
+tempf=[f(:,nlon-1:nlon) f f(:,1:4)];
 
 tempqbar=tempf+dd.*(px2+py2);
 qbar=tempqbar(:,5:nlon+4);
@@ -360,7 +360,7 @@ qbar=tempqbar(:,5:nlon+4);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for dqbar/dx, and d2qbar/dx2
 
-px1=NaN*ones(nlat,nlon+8); px2=px1;
+px1=NaN*ones(nlat+1,152); px2=px1;
 for i=4:nlon+5
   px1(:,i)=(mean(tempqbar(:,i-1:i)')'-mean(tempqbar(:,i:i+ ...
                                                     1)')')/ ...
@@ -377,7 +377,7 @@ d2qbardx2=px2(:,5:nlon+4);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for dqbar/dy (should be same as BetaM), and d2qbar/dy2
 
-py1=NaN*ones(nlat,nlon+8); py2=py1;
+py1=NaN*ones(nlat+1,152); py2=py1;
 for i=(jmin-1):(jmax+1)
   py1(i,:)=(mean(tempqbar(i-1:i,:))-mean(tempqbar(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
@@ -392,7 +392,7 @@ d2qbardy2a=py2(:,5:nlon+4);
 
 %%%%  Alternately for d2qbar/dy2
 
-py2=NaN*ones(nlat,nlon);
+py2=NaN*ones(nlat+1,nlon);
 for i=4:70
   py2(i,:)=(mean(BetaM(i-1:i,:))-mean(BetaM(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
@@ -407,8 +407,8 @@ d2qbardy2=py2;
 %%%%  Solving for d2qbar/dxy (once);  COULD ALSO DO dx of either BetaM or
 %%%%  dqbardy
 
-py1=NaN*ones(nlat,nlon);
-for i=2:nlat-1
+py1=NaN*ones(nlat+1,nlon);
+for i=2:nlat
   py1(i,:)=(mean(dqbardx(i-1:i,:))-mean(dqbardx(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
@@ -420,8 +420,8 @@ d2qbardxy=py1;
 
 tempU=[UbarM(:,nlon) UbarM UbarM(:,1)];
 
-px1=NaN*ones(nlat,nlon+2);py1=px1;
-for i=2:nlat-1
+px1=NaN*ones(nlat+1,nlon+2);py1=px1;
+for i=2:nlat
   py1(i,:)=(mean(tempU(i-1:i,:))-mean(tempU(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
@@ -438,8 +438,8 @@ dUbarMdy=py1(:,2:nlon+1);
 
 tempV=[VbarM(:,nlon) VbarM VbarM(:,1)];
 
-px1=NaN*ones(nlat,nlon+2);py1=px1;
-for i=2:nlat-1
+px1=NaN*ones(nlat+1,nlon+2);py1=px1;
+for i=2:nlat
   py1(i,:)=(mean(tempV(i-1:i,:))-mean(tempV(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
