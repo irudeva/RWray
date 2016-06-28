@@ -267,7 +267,7 @@ yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
 %% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
 u0=(squeeze(u(:,:,nt)))';
-[m,n]=size(u200);
+[m,n]=size(u0);
 v0=(squeeze(v(:,:,nt)))';
 psi0=(squeeze(psi(:,:,nt)))';
 
