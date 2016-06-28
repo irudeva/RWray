@@ -398,7 +398,7 @@ d2qbardy2a=py2(:,5:nlon+4);
 %%%%  Alternately for d2qbar/dy2
 
 py2=NaN*ones(nlat,nlon);
-for i=4:70
+for i=4:nlat-3
   py2(i,:)=(mean(BetaM(i-1:i,:))-mean(BetaM(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
