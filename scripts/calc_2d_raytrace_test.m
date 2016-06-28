@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[70];
-frcy=[31];
+frcx=[154];
+frcy=[97];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -166,11 +166,12 @@ fuwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fuwnd,'NC_NOWRITE' );
 level     = netcdf.getVar (ncid,0);
 lev       = find(level==200);
-[name,type,dimids,natts] = netcdf.inqVar(ncid,4);
+varid     = 3;
+[name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='u'); 
-    uwnd     = netcdf.getVar (ncid,4);   
+    uwnd     = netcdf.getVar (ncid,varid);   
     u = squeeze(uwnd(:,:,lev,:));
-     display(['size of uwnd = ',sprintf(' %d',size(u))]);
+     display(['size of uwnd (',name,') = ',sprintf(' %d',size(u))]);
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,1);
 if(name == 'latitude'); 
@@ -193,19 +194,22 @@ end;
 
 fvwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fvwnd,'NC_NOWRITE' );
-[name,type,dimids,natts] = netcdf.inqVar(ncid,4);
+varid     = 4;
+[name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='v'); 
     vwnd     = netcdf.getVar (ncid,4);   
     v = squeeze(vwnd(:,:,lev,:));
+    display(['size of vwnd (',name,') = ',sprintf(' %d',size(v))]);
 end;
 
 fpsi      = '../data/sf300.mnth.erain.nc' ;
 ncid      = netcdf.open ( fpsi,'NC_NOWRITE' );
-[name,type,dimids,natts] = netcdf.inqVar(ncid,3);
+varid     = 3;
+[name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='sf'); 
     %disp('reading streamfunction');
-    psi     = netcdf.getVar (ncid,3);  
-     display(['size of streamfunction = ',sprintf(' %d',size(psi))]);
+    psi     = netcdf.getVar (ncid,varid);  
+     display(['size of streamfunction (',name,') = ',sprintf(' %d',size(psi))]);
 end;
 
 disp('done getting data.');
