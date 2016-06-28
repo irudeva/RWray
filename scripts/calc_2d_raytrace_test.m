@@ -121,8 +121,8 @@ use_climatology=0;
 
 %% specify highest latitudes where background fields are specified;
 %% this depends on the resolution and format of the background fields:
-jmin=5;
-jmax=69;
+%jmin=5;
+%jmax=69;
 
 
 %% save parameters to be read by plot_rays.m:
@@ -270,6 +270,11 @@ Lat(:,:,1)=lat;
 
 f=(2*7.2925e-5)*sin(Lat);
 r=6.37e6;
+
+%% specify highest latitudes where background fields are specified;
+%% this depends on the resolution and format of the background fields:
+jmin=5;
+jmax=nlat-4;
 
 %%%%%%%%%%%%%%%%%%%%
 %%  Getting the x and y Mercator coordinates
@@ -493,10 +498,12 @@ for ilocation=1:Nlocations
     for kkr=1:Nk_wavenumbers
       kk=k_wavenumbers(kkr);
 %      for RR=1:3
-        fprintf('Ray tracing... period=%d, k=%d, root=%d, ilocation=%d\n' ...
-                ,period,kk,RR,ilocation);
+%        fprintf('Ray tracing... period=%d, k=%d, root=%d, ilocation=%d\n' ...
+%                ,period,kk,RR,ilocation);
+        fprintf('Ray tracing... period=%d, k=%d,  ilocation=%d\n' ...
+                ,period,kk,ilocation);
         spotk=kk/r/cos(Lat(fry+4,frx));
-        subk=[ilocation kk RR];
+%        subk=[ilocation kk RR];
         ytt=yy(jmin:jmax);yi=ytt(fry);xi=xx(frx);
         %%  Ks=sqrt(abs(sBetaM(fry,frx)/sUbarM(fry,frx)));
         %%  spotl=real((Ks^2-spotk^2)^0.5);
@@ -656,7 +663,7 @@ for ilocation=1:Nlocations
             %% Eli: moved output files to subdirectory:
 %             eval(sprintf('save output/raypath_k%d_period%d_location%d_root%d alL -ascii -tabs'...
 %                          ,kk,period,ilocation,RR));
-            fn_out = sprintf('output/raypath_k%d_period%d_location%d_root%d'...
+            fn_out = sprintf('../output/raypath_k%d_period%d_location%d_root%d'...
                          ,kk,period,ilocation,RR);
             dlmwrite(fn_out, alL,'precision', '%.6f');
 %             eval(sprintf('dlmwrite output/raypath_k%d_period%d_location%d_root%d alL'...

@@ -1,5 +1,6 @@
 data/
 sources/
+output/
 
 *.mat
-*.m~
+*.m\~
