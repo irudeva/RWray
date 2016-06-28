@@ -170,7 +170,10 @@ lev       = find(level==200);
 varid     = 3;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='u'); 
-    uwnd     = netcdf.getVar (ncid,varid);   
+    uwnd     = netcdf.getVar (ncid,varid,'short');
+    scale = netcdf.getAtt(ncid,varid,'scale_factor');
+    offset= netcdf.getAtt(ncid,varid,'add_offset');
+    uwnd = single(uwnd)*scale+offset;   
     %u = squeeze(uwnd(:,:,lev,:));
     u = uwnd;
      display(['size of uwnd (',name,') = ',sprintf(' %d',size(u))]);
@@ -209,9 +212,13 @@ ncid      = netcdf.open ( fvwnd,'NC_NOWRITE' );
 varid     = 4;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
 if(name=='v'); 
-    vwnd     = netcdf.getVar (ncid,4);   
+
+    vwnd     = netcdf.getVar (ncid,varid,'short');
+    scale = netcdf.getAtt(ncid,varid,'scale_factor');
+    offset= netcdf.getAtt(ncid,varid,'add_offset');
+    vwnd = single(vwnd)*scale+offset;
     %v = squeeze(vwnd(:,:,lev,:));
-    v = vwnd;
+    v = vwnd; 
      display(['size of vwnd (',name,') = ',sprintf(' %d',size(v))]);
 end;
 
@@ -234,6 +241,11 @@ TIMEbase = datenum(1900, 1, 1);
 date = datestr(double(time/hoursPerDay) + TIMEbase);
 mydate = '01-Sep-2014';
  display(['My    date: ',mydate])
+ 
+ %date = cellstr(datestr(double(time/hoursPerDay) + TIMEbase));
+ %nt = find(strcmp(date,mydate));
+
+ 
 for t = 1:size(time,1)
  date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
  if date == '01-Sep-2014'
