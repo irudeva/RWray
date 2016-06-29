@@ -468,11 +468,11 @@ for ilocation=3:Nlocations
     
     for kkr=1:Nk_wavenumbers
       kk=k_wavenumbers(kkr);
-%      for RR=1:3
+      for RR=1:3
 %        fprintf('Ray tracing... period=%d, k=%d, root=%d, ilocation=%d\n' ...
 %                ,period,kk,RR,ilocation);
-        fprintf('Ray tracing... period=%d, k=%d,  ilocation=%d\n' ...
-                ,period,kk,ilocation);
+        fprintf('Ray tracing...  ilocation=%d, period=%d, k=%d, root=%d\n' ...
+                ,ilocation, period,kk, RR);
         spotk=kk/r/cos(Lat(fry+4,frx));
 %        subk=[ilocation kk RR];
         ytt=yy(jmin:jmax);yi=ytt(fry);xi=xx(frx);
@@ -491,7 +491,7 @@ for ilocation=3:Nlocations
         cz(3)=Vint*spotk^2+qxint;
         cz(4)=Uint*spotk^3-qyint*spotk-omega*spotk^2;
         tl=roots(cz);
-      for RR=1:3
+%      for RR=1:3
         spotl=tl(RR);
         Ks=(spotl^2+spotk^2)^0.5;
         
@@ -527,7 +527,7 @@ for ilocation=3:Nlocations
         %%  Starting the loop with the above initial k,l, and Ks
         
         for t=1:Nsteps
-          if rem(t,10)==0
+          if rem(t,40)==0
             fprintf(1,'t = %g\n',t);
           end
           
@@ -536,13 +536,7 @@ for ilocation=3:Nlocations
           
         
           if use_interp2==0
-        disp('I am at line 512');
-        disp(yi);
-        disp(subyy(1:5,1));
-        disp(xi);
-        disp(subxx(1,1:5));
             Uint=griddata(subyy,subxx,sUbarM,yi,xi,'cubic');
-        disp('I am at line 518');
             Bint=griddata(subyy,subxx,sBetaM,yi,xi,'cubic');
             Vint=griddata(subyy,subxx,sVbarM,yi,xi,'cubic');
             qint=griddata(subyy,subxx,sqbar,yi,xi,'cubic');
@@ -629,7 +623,7 @@ for ilocation=3:Nlocations
           
           if rem(t,24)==0
 %            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
-            alL(t/24,:)=[t/24 loc(t,:)];
+            alL(t/24+1,:)=[t/24 loc(t,:)];
 %             disp(alL);
 %             exit
             %% Eli: moved output files to subdirectory:
@@ -637,6 +631,7 @@ for ilocation=3:Nlocations
 %                          ,kk,period,ilocation,RR));
           end
         end
+            alL(1,:)=[0 latin(fry+4) lonin(frx)];
             fn_out = sprintf('../output/raypath_loc%d_period%d_k%d_root%d'...
                          ,ilocation,period,kk,RR);
             dlmwrite(fn_out, alL,'precision', '%.6f');
