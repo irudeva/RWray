@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[154 1];
-frcy=[97 15];
+frcx=[154 1 1];
+frcy=[97 15 90];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -78,21 +78,21 @@ end
 
 %% Eli: specify periods (use Inf for a zero frequency):
 day=86400;
-%Periods=[-20]*day;
 Periods=[ -60 -30 Inf 30 60 ]*day;
+Periods=[ -14 14 ]*day;
 frequencies=2*pi./Periods;
 Nfrequencies=length(frequencies);
 
 %% specify initial k wave number:
-k_wavenumbers=[1 2 3 4 5];
+k_wavenumbers=[1 2 3 4 5 6];
 %k_wavenumbers=[2];
 
 %% time step: make sure results are robust to halving the time step:
 %dt=900;     %15 min
-dt=3600*6;  %6 hours
+dt=3600;  %1 hour
 
 %% integration duration (in hours):
-integration_time=24*30;
+integration_time=24*10;
 
 Nsteps=round(integration_time*3600/dt);
 
@@ -210,7 +210,7 @@ disp('done getting data.');
 hoursPerDay = 24.;
 TIMEbase = datenum(1900, 1, 1);
 date = datestr(double(time/hoursPerDay) + TIMEbase);
-mydate = '01-Sep-2014';
+mydate = '01-Jan-1985';
  display(['My    date: ',mydate])
  
  %date = cellstr(datestr(double(time/hoursPerDay) + TIMEbase));
@@ -219,7 +219,7 @@ mydate = '01-Sep-2014';
  
 for t = 1:size(time,1)
  date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
- if date == '01-Sep-2014'
+ if date == mydate
     display(['Found date: ',date])
     nt  = t;
  end
@@ -434,7 +434,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for ilocation=2:Nlocations
+for ilocation=3:Nlocations
 
   frx=frcx(ilocation);
   fry=frcy(ilocation);
@@ -627,9 +627,9 @@ for ilocation=2:Nlocations
           rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           
-          if rem(t,4)==0
+          if rem(t,24)==0
 %            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
-            alL(t/4,:)=[t/4 loc(t,:)];
+            alL(t/24,:)=[t/24 loc(t,:)];
 %             disp(alL);
 %             exit
             %% Eli: moved output files to subdirectory:
