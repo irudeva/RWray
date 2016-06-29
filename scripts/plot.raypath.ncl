@@ -6,13 +6,17 @@ begin
 
 npts = 10
 col = (/"red","blue","orange","green","black","black","black"/)
+dum1 = new(6, graphic)
+dum2 = dum1
+
 
   do loc  = 3,3
-   do root = 1,1
+   do root = 1,3
     ;period = (/"-60","60","-30","30","Inf"/)
     period = (/"-14","14"/)
-    do ip    = 0, dimsizes(period)-1
+    do ip    = 1, dimsizes(period)-1
      p = period(ip)
+     print("p "+p)
      fout = "../output/plot/ray_location"+loc+"_period"+p+"_root"+root
 
 ; ***  Plotting  *******************************************************************
@@ -23,7 +27,7 @@ col = (/"red","blue","orange","green","black","black","black"/)
   res@gsnDraw            = False        ; don't draw plot yet
   res@gsnFrame           = False        ; don't advance frame yet
 
-  res@mpMinLatF          = 20   ; range to zoom in on
+  res@mpMinLatF          = -90   ; range to zoom in on
   res@mpMaxLatF          = 90
   res@mpMinLonF          = -180
   res@mpMaxLonF          = 180
@@ -49,8 +53,9 @@ col = (/"red","blue","orange","green","black","black","black"/)
      do k    = 1,6
     
       fin = "../output/raypath_k"+k+"_period"+p+"_loc"+loc+"_root"+root
-      print("Raypath from "+fin)
+      print(fin)
       if (fileexists(fin)) then
+      print("Raypath from "+fin)
        ray = asciiread (fin,(/npts,3/),"float")
        raylon = ray(:,2)
        raylat = ray(:,1)
@@ -60,15 +65,15 @@ col = (/"red","blue","orange","green","black","black","black"/)
   
        pres@gsLineColor  = col(k-1)         ; color of lines
        ; dum1 = gsn_add_polyline(wks,plot, gcdist@gclon ,gcdist@gclat ,pres)
-       dum1 = gsn_add_polyline(wks, plot, raylon, raylat, pres)
+       dum1(k-1) = gsn_add_polyline(wks, plot, raylon, raylat, pres)
 
        ; Add markers to each of the 'npts' on the great circle path.
        mkres@gsMarkerColor  = "black" 
        ; dum2 = gsn_add_polymarker(wks,plot,gcdist@gclon ,gcdist@gclat ,mkres)
-       dum2 = gsn_add_polymarker(wks, plot, raylon, raylat, mkres)
+       dum2(k-1) = gsn_add_polymarker(wks, plot, raylon, raylat, mkres)
  
        draw(plot)
-       frame(wks)
+       ;frame(wks)
        delete(ray)
        delete(raylon)
        delete(raylat)

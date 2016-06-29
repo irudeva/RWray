@@ -78,7 +78,7 @@ end
 
 %% Eli: specify periods (use Inf for a zero frequency):
 day=86400;
-Periods=[ -60 -30 Inf 30 60 ]*day;
+%Periods=[ -60 -30 Inf 30 60 ]*day;
 Periods=[ -14 14 ]*day;
 frequencies=2*pi./Periods;
 Nfrequencies=length(frequencies);
@@ -637,8 +637,8 @@ for ilocation=3:Nlocations
 %                          ,kk,period,ilocation,RR));
           end
         end
-            fn_out = sprintf('../output/raypath_k%d_period%d_loc%d_root%d'...
-                         ,kk,period,ilocation,RR);
+            fn_out = sprintf('../output/raypath_loc%d_period%d_k%d_root%d'...
+                         ,ilocation,period,kk,RR);
             dlmwrite(fn_out, alL,'precision', '%.6f');
 %             eval(sprintf('dlmwrite output/raypath_k%d_period%d_loc%d_root%d alL'...
 %                          ,kk,period,ilocation,RR));
