@@ -54,7 +54,7 @@ dum2 = dum1
       fin = "../output/raypath_loc"+loc+"_period"+p+"_k"+k+"_root"+root
       if (fileexists(fin)) then
       print("Raypath from "+fin)
-       ray = asciiread (fin,(/npts,3/),"float")
+       ray = asciiread (fin,(/npts,5/),"float")
        raylon = ray(:,2)
        raylat = ray(:,1)
 

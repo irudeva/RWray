@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[154 1 1];
-frcy=[97 15 90];
+frcx=[154 1 1 1];
+frcy=[97 15 90 77];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -79,7 +79,7 @@ end
 %% Eli: specify periods (use Inf for a zero frequency):
 day=86400;
 %Periods=[ -60 -30 Inf 30 60 ]*day;
-Periods=[ -14 14 ]*day;
+Periods=[ Inf 50 20 ]*day;
 frequencies=2*pi./Periods;
 Nfrequencies=length(frequencies);
 
@@ -210,21 +210,31 @@ disp('done getting data.');
 hoursPerDay = 24.;
 TIMEbase = datenum(1900, 1, 1);
 date = datestr(double(time/hoursPerDay) + TIMEbase);
-mydate = '01-Jan-1985';
- display(['My    date: ',mydate])
- 
- %date = cellstr(datestr(double(time/hoursPerDay) + TIMEbase));
- %nt = find(strcmp(date,mydate));
 
+formatdata = '01-%s-%d';
+mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! DEC - fix year!!!
+in=1
+for yr = 1980:2010
+    for imon = 1:3
+      nyr = yr;
+      if(mon(imon,:)=='Dec'); nyr=yr-1; end
+      mydate(in,:) = sprintf(formatdata,mon(imon,:),nyr);
+      display(['My    date: ',mydate(in,:)])
+      in = in+1;
+    end
+end
+ndate = size(mydate,1);
  
-for t = 1:size(time,1)
- date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
- if date == mydate
+for in = 1:ndate
+ for t = 1:size(time,1)
+  date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
+   if date == mydate(in,:)
     display(['Found date: ',date])
-    nt  = t;
+    nt(in)  = t;
+  end
  end
 end
-%nt=find(datestr(double(time/hoursPerDay) + TIMEbase) == '01-Sep-2014')
+
 
 %%%  Other
 
@@ -258,10 +268,10 @@ yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
 
 %% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
-u0=(squeeze(u(:,:,nt)))';
+u0=(squeeze(mean(u(:,:,nt),3)))';
 [m,n]=size(u0);
-v0=(squeeze(v(:,:,nt)))';
-psi0=(squeeze(psi(:,:,nt)))';
+v0=(squeeze(mean(v(:,:,nt),3)))';
+psi0=(squeeze(mean(psi(:,:,nt),3)))';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Smoothing the fields
@@ -434,7 +444,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for ilocation=3:Nlocations
+for ilocation=4:Nlocations
 
   frx=frcx(ilocation);
   fry=frcy(ilocation);
@@ -473,8 +483,8 @@ for ilocation=3:Nlocations
 %                ,period,kk,RR,ilocation);
         fprintf('Ray tracing...  ilocation=%d, period=%d, k=%d, root=%d\n' ...
                 ,ilocation, period,kk, RR);
-%IRA        spotk=kk/r/cos(Lat(fry+4,frx));
-        spotk=kk/r;
+        spotk=kk/r/cos(Lat(fry+4,frx));
+%IRA        spotk=kk/r;
 %        spotk=kk;
 %        subk=[ilocation kk RR];
         ytt=yy(jmin:jmax);yi=ytt(fry);xi=xx(frx);
@@ -499,12 +509,12 @@ for ilocation=3:Nlocations
         spotl
         Ks=(spotl^2+spotk^2)^0.5;
         
-        
+        tstl=real(spotl)*r*cos(Lat(fry+4,1));
         if do_only_northern_hisphere_rays
           %%  If only interested in rays that go northward, break the
           %%  run if the starting l wavenumber has negative real part:
-%IRA          tstl=real(spotl)*r*cos(Lat(fry+4,1));
-          tstl=real(spotl);
+          tstl=real(spotl)*r*cos(Lat(fry+4,1));
+%IRA          tstl=real(spotl);
           if real(spotl)<=0 
             fprintf(1,['*** found real(l)<0, ray going to southern ' ...
                        'hemisphere, not tracing it\n']);
@@ -519,8 +529,8 @@ for ilocation=3:Nlocations
           %%  if the starting l wavenumber has an imaginary part.  N.B.
           %%  The complex conjugates give redundant solutions, so only
           %%  need to trace one
-%IRA          tstl2=imag(spotl)*r*cos(Lat(fry+4,1));
-          tstl2=imag(spotl);
+          tstl2=imag(spotl)*r*cos(Lat(fry+4,1));
+%IRA          tstl2=imag(spotl);
           if tstl2~=0
             fprintf('*** found complex initial l, not tracing. \n')
             fprintf('    [tstl2 ilocation kk omega RR]=[%g,%g,%g,%g,%g]\n' ...
@@ -579,7 +589,7 @@ for ilocation=3:Nlocations
           dkdt=-spotk*Uxint-spotl*Vxint+(qxyint*spotk-qxxint*spotl)/Ks^2;
           dldt=-spotk*Uyint-spotl*Vyint+(qyyint*spotk-qxyint*spotl)/Ks^2;
           dxdt=Uint+((spotk^2-spotl^2)*qyint-2*spotk*spotl*qxint)/Ks^4;
-          dydt=Vint+(2*spotk*spotl*qyint-(spotk^2-spotl^2)*qxint)/Ks^4;
+          dydt=Vint+(2*spotk*spotl*qyint+(spotk^2-spotl^2)*qxint)/Ks^4;
           
           %%%%%%%%%%%%%%
           %%  Updating the changes
@@ -616,8 +626,8 @@ for ilocation=3:Nlocations
           %%  Storing
 
           %% XX what is each of these?
-%IRA          adj=r*Cosint;
-          adj=1;
+          adj=r*Cosint;
+%IRA          adj=1;
           trl(t,:)=[xi yi];
           rnums(t,:)=[real(spotl)*adj real(spotk)*adj real(Ks)*adj];
           inums(t,:)=[imag(spotl)*adj imag(spotk)*adj imag(Ks)*adj];
@@ -630,7 +640,7 @@ for ilocation=3:Nlocations
           
           if rem(t,24)==0
 %            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
-            alL(t/24+1,:)=[t/24 loc(t,:)];
+            alL(t/24+1,:)=[t/24 loc(t,:) real(spotk)*adj real(spotl)*adj];
 %             disp(alL);
 %             exit
             %% Eli: moved output files to subdirectory:
@@ -638,7 +648,7 @@ for ilocation=3:Nlocations
 %                          ,kk,period,ilocation,RR));
           end
         end
-            alL(1,:)=[0 latin(fry+4) lonin(frx)];
+            alL(1,:)=[0 latin(fry+4) lonin(frx) k_wavenumbers(kkr) tstl];
             fn_out = sprintf('../output/raypath_loc%d_period%d_k%d_root%d'...
                          ,ilocation,period,kk,RR);
             dlmwrite(fn_out, alL,'precision', '%.6f');
