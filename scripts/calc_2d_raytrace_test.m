@@ -262,11 +262,12 @@ jmax=nlat-4;
 
 xx=r*x*pi/180;
 yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
+yy(y==90)=inf;
+yy(y==-90)=-inf;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Taking the wind/psi fields
 
-%% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
 u0=(squeeze(mean(u(:,:,nt),3)))';
 [m,n]=size(u0);
