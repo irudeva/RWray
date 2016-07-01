@@ -51,7 +51,7 @@
 %%  D) dx/dt=ug=UbarM+{(k^2-l^2)*dqbar/dy - 2*k*l*dqbar/dx}/Ks^4
 %%  E) dy/dt=vg=VbarM+{2*k*l*dqbar/dy - (k^2-l^2)*dqbar/dx}/Ks^4
 
-%%  Getting the September climatology
+%%  Getting climatology
 close all; clear all
 %profile on
 %addpath /usr/local/bin %% Adds the location of loaddap/Ira:removed
@@ -250,7 +250,7 @@ lat=Y*pi/180;
 Lat(:,:,1)=lat;
 
 f=(2*7.2925e-5)*sin(Lat);
-r=6.37e6;
+r=6.371e6;
 
 %% specify highest latitudes where background fields are specified;
 %% this depends on the resolution and format of the background fields:
@@ -294,7 +294,7 @@ PsiM=psi0./cos(Lat);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for BetaM; NOTE that cos2(Lat)=(1+cos(2*Lat))/2
 
-a=(2*7.2925e-5);
+a=(2*7.2925e-5);%rotation rate of Earth (rad/s)
 b=(1+cos(2*Lat))/2;
 trm1=a*b/r;
 c=b.*UbarM;
