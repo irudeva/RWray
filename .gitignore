@@ -3,4 +3,4 @@ sources/
 output/
 
 *.mat
-*.m\~
+*.swp
