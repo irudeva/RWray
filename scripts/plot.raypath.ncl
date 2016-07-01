@@ -10,13 +10,13 @@ dum1 = new(6, graphic)
 dum2 = dum1
 
 
-  do loc  = 3,3
+  do loc  = 4,4
    do root = 1,3
     ;period = (/"-60","60","-30","30","Inf"/)
-    period = (/"-14","14"/)
+    period = (/"Inf","50","20"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
-     fout = "../output/plot/ray_location"+loc+"_period"+p+"_root"+root
+     fout = "../output/plot/ray_loc"+loc+"_period"+p+"_root"+root
 
 ; ***  Plotting  *******************************************************************
   wks  = gsn_open_wks("png",fout)
@@ -43,10 +43,27 @@ dum2 = dum1
 
   ; resources for polylines
   pres = True  
-  ; resources for merkers
+
+  ; resources for markers
   mkres               = True
   mkres@gsMarkerIndex = 17     ; Filled circle
   mkres@gsMarkerSizeF = 0.02
+
+
+; legend
+
+  lres               = True
+  lres@gsMarkerIndex = 17     ; Filled circle
+  lres@gsMarkerSizeF = 0.03
+
+  txres               = True
+  txres@txFontHeightF = 0.013
+        
+  xleg = (/0.15,0.15,0.35,0.35,0.56,0.56/)   ; Location of
+  ;xtxt = (/0.22,0.225,0.42,0.44,0.65,0.66/)  ; legend markers
+  xtxt = xleg + 0.07
+  yleg = (/0.16,0.10,0.16,0.10,0.16,0.10/)   ; and text
+  ytxt = yleg
 ; *** Map plotted ******************************************************************
 
      do k    = 1,6
@@ -62,6 +79,7 @@ dum2 = dum1
        ; print (gcdist@gclat+"  "+gcdist@gclon ) 
   
        pres@gsLineColor  = col(k-1)         ; color of lines
+       pres@xyExplicitLegendLabels = (/"line3","line4"/)
        ; dum1 = gsn_add_polyline(wks,plot, gcdist@gclon ,gcdist@gclat ,pres)
        dum1(k-1) = gsn_add_polyline(wks, plot, raylon, raylat, pres)
 
@@ -70,6 +88,9 @@ dum2 = dum1
        ; dum2 = gsn_add_polymarker(wks,plot,gcdist@gclon ,gcdist@gclat ,mkres)
        dum2(k-1) = gsn_add_polymarker(wks, plot, raylon, raylat, mkres)
  
+       lres@gsMarkerColor  = col(k-1) 
+       gsn_polymarker_ndc(wks,xleg(k-1),yleg(k-1),lres)
+       gsn_text_ndc      (wks,"k"+k,xtxt(k-1),ytxt(k-1),txres)
        draw(plot)
        ;frame(wks)
        delete(ray)
