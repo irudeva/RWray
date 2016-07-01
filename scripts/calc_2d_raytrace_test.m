@@ -117,9 +117,6 @@ do_only_northern_hisphere_rays=0;
 %% smoothing before ray tracing is a good idea...:
 do_smooth_background_fields=1;
 
-%% see background field data reading section below:
-use_climatology=0;
-
 %% specify highest latitudes where background fields are specified;
 %% this depends on the resolution and format of the background fields:
 %jmin=5;
