@@ -473,7 +473,9 @@ for ilocation=3:Nlocations
 %                ,period,kk,RR,ilocation);
         fprintf('Ray tracing...  ilocation=%d, period=%d, k=%d, root=%d\n' ...
                 ,ilocation, period,kk, RR);
-        spotk=kk/r/cos(Lat(fry+4,frx));
+%IRA        spotk=kk/r/cos(Lat(fry+4,frx));
+        spotk=kk/r;
+%        spotk=kk;
 %        subk=[ilocation kk RR];
         ytt=yy(jmin:jmax);yi=ytt(fry);xi=xx(frx);
         %%  Ks=sqrt(abs(sBetaM(fry,frx)/sUbarM(fry,frx)));
@@ -491,15 +493,18 @@ for ilocation=3:Nlocations
         cz(3)=Vint*spotk^2+qxint;
         cz(4)=Uint*spotk^3-qyint*spotk-omega*spotk^2;
         tl=roots(cz);
+        spotk
 %      for RR=1:3
         spotl=tl(RR);
+        spotl
         Ks=(spotl^2+spotk^2)^0.5;
         
         
         if do_only_northern_hisphere_rays
           %%  If only interested in rays that go northward, break the
           %%  run if the starting l wavenumber has negative real part:
-          tstl=real(spotl)*r*cos(Lat(fry+4,1));
+%IRA          tstl=real(spotl)*r*cos(Lat(fry+4,1));
+          tstl=real(spotl);
           if real(spotl)<=0 
             fprintf(1,['*** found real(l)<0, ray going to southern ' ...
                        'hemisphere, not tracing it\n']);
@@ -514,7 +519,8 @@ for ilocation=3:Nlocations
           %%  if the starting l wavenumber has an imaginary part.  N.B.
           %%  The complex conjugates give redundant solutions, so only
           %%  need to trace one
-          tstl2=imag(spotl)*r*cos(Lat(fry+4,1));
+%IRA          tstl2=imag(spotl)*r*cos(Lat(fry+4,1));
+          tstl2=imag(spotl);
           if tstl2~=0
             fprintf('*** found complex initial l, not tracing. \n')
             fprintf('    [tstl2 ilocation kk omega RR]=[%g,%g,%g,%g,%g]\n' ...
@@ -610,7 +616,8 @@ for ilocation=3:Nlocations
           %%  Storing
 
           %% XX what is each of these?
-          adj=r*Cosint;
+%IRA          adj=r*Cosint;
+          adj=1;
           trl(t,:)=[xi yi];
           rnums(t,:)=[real(spotl)*adj real(spotk)*adj real(Ks)*adj];
           inums(t,:)=[imag(spotl)*adj imag(spotk)*adj imag(Ks)*adj];
