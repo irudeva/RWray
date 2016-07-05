@@ -28,6 +28,9 @@ k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
 lon0 = np.array([0])
 lat0 = np.array([30])
 
+#set to 1 to do complex ray tracing
+complex_tracing=False
+
 print '---Parameters---------'
 print "Wave periods: ", Periods/day, " days"
 print "Wave numbers: ", k_wavenumbers
@@ -36,6 +39,14 @@ print "integration time ", int_time/day, " days"
 print "time step ", dt/mins, " min"
 print "Nsteps = ",Nsteps
 print "Starting points: lon ",lon0,"E lat ",lat0,"N"
+if complex_tracing is True :
+    print "Complex tracing is on"
+elif complex_tracing is False :
+    print "Complex tracing is off"
+else :
+    print 'complex_tracing=',complex_tracing
+    print "CHECK: What to do in case of caplex solutions?"
+    exit()
 print '--------------------'
 
 # Read data
@@ -88,7 +99,7 @@ if (lons1!=lons).any():
 dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
            for t in time]
 
-nt=[-1 for i in range(time.size)]
+nt=np.array([0 for i in range(time.size)])
 i =0
 for yr in range(1980,1982) :
     for m in [12, 1, 2] :
@@ -101,3 +112,20 @@ for yr in range(1980,1982) :
                 ind = dt_time.index(t)
                 nt[i] = ind
                 i += 1
+
+
+u = np.average(uwnd[nt[nt>0],:,:],axis=0)
+v = np.average(vwnd[nt[nt>0],:,:],axis=0)
+psi = np.average(sf[nt[nt>0],:,:],axis=0)
+
+print psi.shape
+
+
+# Convert to Mercator projection
+
+xm=lons*radius*dtr
+ym=lats
+ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
+print ym[2]
+ym[0]=float('inf')
+ym[-1]=ym[0]
