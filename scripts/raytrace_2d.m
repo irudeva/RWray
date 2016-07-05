@@ -10,7 +10,7 @@
 
 close all; clear all
 
-addpath matlab
+addpath matlab matlab/spherepack
 
 rad     = 6.371e6  ; % radius of sphere having same volume as Earth (m)
 e_omega = 7.292e-5 ; % rotation rate of Earth (rad/s)
@@ -34,6 +34,9 @@ k_wavenumbers=[1 2 3 4 5 6];
 
 lon0 = [ 0   0]  ; %deg.E
 lat0 = [30 -30] ; %deg.N
+
+% smoothing before ray tracing MIGHT be a good idea...:
+do_smooth_background_fields=0;
 
 disp('-----------------------------------');
 
@@ -130,8 +133,8 @@ date = datestr(double(time/24) + TIMEbase); % where time is hours from Timebase
 formatdata = '01-%s-%d';
 mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
 in=1;
-for yr = 1980:1981
-    for imon = 1:3
+for yr = 1980:1980
+    for imon = 1:1
       nyr = yr;
       if(mon(imon,:)=='Dec'); nyr=yr-1; end
       mydate(in,:) = sprintf(formatdata,mon(imon,:),nyr);
@@ -157,12 +160,37 @@ u0=(squeeze(mean(u(:,:,nt),3)))';
 v0=(squeeze(mean(v(:,:,nt),3)))';
 psi0=(squeeze(mean(psi(:,:,nt),3)))';
 
+% Check that data are from N to S
+if lat(1)<lat(end)
+    if size(u0,1)~=length(lat) || size(u0,2)~=length(lon)
+      disp('Flipud: u0 array mismatched to dimensions')
+      exit
+    end
+    lat=flipud(lat);
+    u0=flipud(u0);
+    v0=flipud(v0);
+    psi0=flipud(psi0);
+    disp('The data were flipped to be N->S')
+end
+
+
 % In Mercator projection
 
 xm=rad*lon*dtr;
 ym=rad*log((1+sin(dtr*lat))./cos(dtr*lat));
 ym(lat==90)=inf; % was using 1e10 with success here
 ym(lat==-90)=-inf;
+
+%  Smoothing the fields if do_smooth_background_fields=1
+if do_smooth_background_fields
+  u0=zfltr(u0,1,10,1);
+  v0=zfltr(v0,1,10,1);
+  psi0=zfltr(psi0,1,10,1);
+end
+
+%% Calculate all required gradients on Mercator projection
+
+[ux,uy]=gradsphere(lon,lat,u0);
 
 
 
