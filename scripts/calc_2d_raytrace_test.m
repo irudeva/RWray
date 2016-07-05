@@ -115,7 +115,7 @@ do_complex_tracing=0;
 do_only_northern_hisphere_rays=0;
 
 %% smoothing before ray tracing is a good idea...:
-do_smooth_background_fields=1;
+do_smooth_background_fields=0;
 
 %% see background field data reading section below:
 use_climatology=0;
@@ -289,7 +289,8 @@ end
 
 UbarM=u0./cos(Lat);
 VbarM=v0./cos(Lat);
-PsiM=psi0./cos(Lat);
+%IRA PsiM=psi0./cos(Lat);
+PsiM=psi0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for BetaM; NOTE that cos2(Lat)=(1+cos(2*Lat))/2

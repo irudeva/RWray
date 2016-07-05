@@ -95,6 +95,11 @@ if (lons1!=lons).any():
     print "ERROR wind.time != streamfunction.time"
     exit()
 
+
+if(lats[0]<lats[-1]):
+    print "ERROR: make sure that lat dim is N -> S"
+    exit()
+
 #  Time
 dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
            for t in time]
@@ -117,15 +122,25 @@ for yr in range(1980,1982) :
 u = np.average(uwnd[nt[nt>0],:,:],axis=0)
 v = np.average(vwnd[nt[nt>0],:,:],axis=0)
 psi = np.average(sf[nt[nt>0],:,:],axis=0)
-
-print psi.shape
-
+print u[0,0]
 
 # Convert to Mercator projection
 
 xm=lons*radius*dtr
-ym=lats
+ym=lats+1  #array declaration
+#ym[1:-2] = lats[1:-2]
 ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
-print ym[2]
 ym[0]=float('inf')
 ym[-1]=ym[0]
+
+
+um = u+1
+vm = u+1
+i = 0
+for lat in lats:
+    um[i,:]=u[i,:]/np.cos(lat*dtr)
+    vm[i,:]=v[i,:]/np.cos(lat*dtr)
+    i += 1
+print um[1,1] #!!!!!!!!!! u changed!!!!
+print vm[1,1]
+print um.shape
