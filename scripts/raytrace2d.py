@@ -144,3 +144,5 @@ for lat in lats:
 print um[1,1] #!!!!!!!!!! u changed!!!!
 print vm[1,1]
 print um.shape
+
+q = w.absolutevorticity()
