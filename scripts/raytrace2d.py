@@ -1,6 +1,8 @@
 from netCDF4 import Dataset
 import numpy as np
 import datetime as datetime  # Python standard library datetime  module
+from  windspharm.standard import VectorWind
+from windspharm.tools import prep_data, recover_data, order_latdim
 
 print "Calculating 2d ray paths"
 
@@ -106,7 +108,7 @@ dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
 
 nt=np.array([0 for i in range(time.size)])
 i =0
-for yr in range(1980,1982) :
+for yr in range(1980,1983) :
     for m in [12, 1, 2] :
         yr1 = yr
         if m == 12:
@@ -122,7 +124,7 @@ for yr in range(1980,1982) :
 u = np.average(uwnd[nt[nt>0],:,:],axis=0)
 v = np.average(vwnd[nt[nt>0],:,:],axis=0)
 psi = np.average(sf[nt[nt>0],:,:],axis=0)
-print u[0,0]
+print 'u[0,0]=',u[0,0]
 
 # Convert to Mercator projection
 
@@ -137,12 +139,52 @@ ym[-1]=ym[0]
 um = u+1
 vm = u+1
 i = 0
+print "before u=",u[1,1] #!!!!!!!!!! u changed!!!!
 for lat in lats:
     um[i,:]=u[i,:]/np.cos(lat*dtr)
     vm[i,:]=v[i,:]/np.cos(lat*dtr)
     i += 1
-print um[1,1] #!!!!!!!!!! u changed!!!!
-print vm[1,1]
-print um.shape
 
+print "after u=",u[1,1] #!!!!!!!!!! u changed!!!!
+# print 'um[5,0]=',um[5,0] #!!!!!!!!!! u changed!!!!
+# print 'vm[5,1]=',vm[5,1]
+# print um.shape
+
+# print "um[5,0]=",um[5,0]
+# print "um[5,2]=",um[5,2]
+dum, umx1 = np.gradient(um, 83390)
+print "umx1=",umx1[5,0]
+# print "um[5,0]=",um[5,0]
+# print "um[5,2]=",um[5,2]
+# print umx1
+# Create a VectorWind instance to handle the computations.
+uwnd, uwnd_info = prep_data(uwnd, 'tyx')
+vwnd, vwnd_info = prep_data(vwnd, 'tyx')
+
+w = VectorWind(uwnd, vwnd)
+# Compute absolute vorticity
 q = w.absolutevorticity()
+
+qbar = np.average(q[:,:,nt[nt>0]],axis=2)
+print "qbar(4,0)=",qbar[4,0]
+print "qbar(4,5)=",qbar[4,5]
+# print qbar.shape
+# print qbar
+print "gradients"
+qx, qy = w.gradient(qbar)
+qxx, qxy = w.gradient(qx)
+qyx, qyy = w.gradient(qy)
+
+qx1 = np.gradient(qbar, 83390)
+#print qx1.shape
+
+print "qx=",qx[4,0]
+print "qx1=",qx1[4,0]
+#print "qxx=",qxx[4,0]
+
+umx, umy = w.gradient(um)
+
+print "um1=",um[1,1]
+print "um=",um[4,0]
+print "ux=",umx[4,0]
+print "uy=",umy[4,0]

@@ -197,6 +197,9 @@ varid     = 3;
 if(name=='sf'); 
     %disp('reading streamfunction');
     psi     = netcdf.getVar (ncid,varid);  
+    scale = netcdf.getAtt(ncid,varid,'scale_factor');
+    offset= netcdf.getAtt(ncid,varid,'add_offset');
+    psi = single(psi)*scale+offset;
      display(['size of streamfunction (',name,') = ',sprintf(' %d',size(psi))]);
 end;
 
@@ -211,7 +214,7 @@ date = datestr(double(time/hoursPerDay) + TIMEbase);
 formatdata = '01-%s-%d';
 mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! DEC - fix year!!!
 in=1
-for yr = 1980:2010
+for yr = 1980:1982
     for imon = 1:3
       nyr = yr;
       if(mon(imon,:)=='Dec'); nyr=yr-1; end
@@ -287,17 +290,18 @@ end
 
 UbarM=u0./cos(Lat);
 VbarM=v0./cos(Lat);
-%IRA PsiM=psi0./cos(Lat);
+%IRA  PsiM=psi0./cos(Lat);
 PsiM=psi0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for BetaM; NOTE that cos2(Lat)=(1+cos(2*Lat))/2
 
 a=(2*7.2925e-5);%rotation rate of Earth (rad/s)
-b=(1+cos(2*Lat))/2;
+%IRA b=(1+cos(2*Lat))/2;
+b=cos(Lat);
 trm1=a*b/r;
 c=b.*UbarM;
-d=1./b;
+d=1./(b.*b);
 cdy=c;cdy2=c;
 for i=2:nlat-1
   cdy(i,:)=(mean(c(i-1:i,:))-mean(c(i:i+1,:)))/(mean(yy(i-1:i))- ...
@@ -316,7 +320,8 @@ BetaM=trm1-cdy2;
 %%%%  The larger structure is to make sure have entire zonal field
 
 tempPSI=[PsiM(:,nlon-3:nlon) PsiM PsiM(:,1:4)];
-tempxx=[xx(nlon-3:nlon) xx xx(1:4)];
+%IRA tempxx=[xx(nlon-3:nlon) xx xx(1:4)];
+tempxx=[-xx(5:-1:2) xx xx(nlon)+xx(2:5)];
 
 px1=tempPSI;px2=px1;py1=px1;py2=px1;
 for i=2:nlat-1
