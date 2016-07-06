@@ -51,7 +51,7 @@
 %%  D) dx/dt=ug=UbarM+{(k^2-l^2)*dqbar/dy - 2*k*l*dqbar/dx}/Ks^4
 %%  E) dy/dt=vg=VbarM+{2*k*l*dqbar/dy - (k^2-l^2)*dqbar/dx}/Ks^4
 
-%%  Getting the September climatology
+%%  Getting climatology
 close all; clear all
 %profile on
 %addpath /usr/local/bin %% Adds the location of loaddap/Ira:removed
@@ -116,9 +116,6 @@ do_only_northern_hisphere_rays=0;
 
 %% smoothing before ray tracing is a good idea...:
 do_smooth_background_fields=0;
-
-%% see background field data reading section below:
-use_climatology=0;
 
 %% specify highest latitudes where background fields are specified;
 %% this depends on the resolution and format of the background fields:
@@ -250,7 +247,7 @@ lat=Y*pi/180;
 Lat(:,:,1)=lat;
 
 f=(2*7.2925e-5)*sin(Lat);
-r=6.37e6;
+r=6.371e6;
 
 %% specify highest latitudes where background fields are specified;
 %% this depends on the resolution and format of the background fields:
@@ -262,11 +259,12 @@ jmax=nlat-4;
 
 xx=r*x*pi/180;
 yy=r*log((1+sin(y*pi/180))./cos(y*pi/180));
+yy(y==90)=inf;
+yy(y==-90)=-inf;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Taking the wind/psi fields
 
-%% Eli changed from u to u.u etc for all three fields here:
 %% u,v,psi; 
 u0=(squeeze(mean(u(:,:,nt),3)))';
 [m,n]=size(u0);
@@ -295,7 +293,7 @@ PsiM=psi0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Solving for BetaM; NOTE that cos2(Lat)=(1+cos(2*Lat))/2
 
-a=(2*7.2925e-5);
+a=(2*7.2925e-5);%rotation rate of Earth (rad/s)
 b=(1+cos(2*Lat))/2;
 trm1=a*b/r;
 c=b.*UbarM;
