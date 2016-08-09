@@ -4,6 +4,12 @@ import datetime as datetime  # Python standard library datetime  module
 from  windspharm.standard import VectorWind
 from windspharm.tools import prep_data, recover_data, order_latdim
 
+
+# import cartopy.crs as ccrs
+# from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+# from cartopy.util import add_cyclic_point
+
+
 print "Calculating 2d ray paths"
 
 # Parameters
@@ -144,16 +150,12 @@ for lat in lats:
     um[i,:]=u[i,:]/np.cos(lat*dtr)
     vm[i,:]=v[i,:]/np.cos(lat*dtr)
     i += 1
-
-print "after u=",u[1,1] #!!!!!!!!!! u changed!!!!
-# print 'um[5,0]=',um[5,0] #!!!!!!!!!! u changed!!!!
-# print 'vm[5,1]=',vm[5,1]
-# print um.shape
+# um checked!!!
 
 # print "um[5,0]=",um[5,0]
 # print "um[5,2]=",um[5,2]
-dum, umx1 = np.gradient(um, 83390)
-print "umx1=",umx1[5,0]
+umy1, dum = np.gradient(um, 83390)
+print "umy1=",umy1[5,0]
 # print "um[5,0]=",um[5,0]
 # print "um[5,2]=",um[5,2]
 # print umx1
@@ -167,16 +169,66 @@ q = w.absolutevorticity()
 
 qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
-print "qbar(4,5)=",qbar[4,5]
-# print qbar.shape
-# print qbar
+#qbar checked!!!
+
+
 print "gradients"
 qx, qy = w.gradient(qbar)
 qxx, qxy = w.gradient(qx)
 qyx, qyy = w.gradient(qy)
 
-qx1 = np.gradient(qbar, 83390)
-#print qx1.shape
+qx1,dum = np.gradient(qbar, 83390)
+
+
+#---NetCDF write---------------------------------------------------------------
+print("Start NetCDF writing")
+
+ncvar = 'umy1'
+ftest = '../output/test/test.%s.nc' % (ncvar)
+ncout = Dataset(ftest, 'w', format='NETCDF4')
+ncout.description = "TEST %s" % (ftest)
+
+# Using our previous dimension info, we can create the new time dimension
+# Even though we know the size, we are going to set the size to unknown
+
+dimnam=('longitude','latitude','time')
+varnam=['longitude','latitude','time',ncvar]
+
+ncout.createDimension(dimnam[0], lons.size)
+ncout.createDimension(dimnam[1], lats.size)
+#ncout.createDimension(dimnam[2], None)
+
+for nv in range(0, 2) :
+    ncout_var = ncout.createVariable(varnam[nv], nc.variables[varnam[nv]].dtype,dimnam[nv])
+    for ncattr in nc.variables[varnam[nv]].ncattrs():
+        ncout_var.setncattr(ncattr, nc.variables[varnam[nv]].getncattr(ncattr))
+#print(nc.variables['latitude'].ncattrs())
+
+ncout.variables[dimnam[0]][:] = lons
+ncout.variables[dimnam[1]][:] = lats
+#ncout.variables[dimnam[2]][:] = time
+#ncout.variables[dimnam[2]][:] = 1
+
+ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
+#ncout_var.long_name = 'streamfunction'
+#var_scale = 1.e-9
+var_scale = 1.e-6
+var_add   = 0.
+ncout_var.scale_factor = var_scale
+ncout_var.add_offset   = var_add
+#!!!automatically takes scale and offset into account
+#!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
+#ncout_var.units        = 'm**2 s**-1'
+ncout_var.units        = 'not specified'
+
+#print qx.shape
+#print ncout_var.shape
+ncout_var[:] = umy1
+
+
+nc.close()
+ncout.close()
+#---End NetCDF write---------------------------------------------------------------
 
 print "qx=",qx[4,0]
 print "qx1=",qx1[4,0]
