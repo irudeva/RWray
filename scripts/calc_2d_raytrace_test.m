@@ -4,10 +4,10 @@
 %%  Written by Jeff Shaman.
 %%  Some minor changes, and all the errors: Eli Tziperman
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  Look for "Required inpu
+%%  Look for "Required input"
 
 %%  There 3 background states to be used, possibly
-%%  Complex solutions are tracked, initial northward propagation is 
+%%  Complex solutions are tracked, initial northward propagation is
 %%  required
 %%  Everything is done with units this time
 %%  All fields needed are solved for in the grid and those grids are
@@ -15,10 +15,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  The following are needed (based on Karoly, 1983):
-%%  1)  BetaM--this can be solved for a number of ways, as Karoly did 
+%%  1)  BetaM--this can be solved for a number of ways, as Karoly did
 %%  (and also Hoskins and Karoly, 1981), where BetaM=2*Omega*cos2(Lat)/r
 %%         - d/dy[(1/cos2(Lat))*d/dy(cos2(Lat)*UbarM)]
-%%     or as Hoskins and Ambrizzi specify (2 ways: w/ and w/o Mercator) 
+%%     or as Hoskins and Ambrizzi specify (2 ways: w/ and w/o Mercator)
 %%
 %%  2)  UbarM--per Karoly, this is u/cos(Lat)
 %%  3)  VbarM--per Karoly, this is v/cos(Lat)
@@ -137,17 +137,17 @@ level     = netcdf.getVar (ncid,0);
 lev       = find(level==200);
 varid     = 3;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
-if(name=='u'); 
+if(name=='u');
     uwnd     = netcdf.getVar (ncid,varid,'short');
     scale = netcdf.getAtt(ncid,varid,'scale_factor');
     offset= netcdf.getAtt(ncid,varid,'add_offset');
-    uwnd = single(uwnd)*scale+offset;   
+    uwnd = single(uwnd)*scale+offset;
     %u = squeeze(uwnd(:,:,lev,:));
     u = uwnd;
      display(['size of uwnd (',name,') = ',sprintf(' %d',size(u))]);
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,1);
-if(name == 'latitude'); 
+if(name == 'latitude');
     lat     = netcdf.getVar (ncid,1);
     latin   = lat;
      display(['size of lat = ',sprintf(' %d',size(lat))]);
@@ -156,7 +156,7 @@ else
     exit
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,0);
-if(name == 'longitude'); 
+if(name == 'longitude');
     lon     = netcdf.getVar (ncid,0);
     lonin   = lon;
      display(['size of lon = ',sprintf(' %d',size(lon))]);
@@ -165,7 +165,7 @@ else
     exit
 end;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,2);
-if(name == 'time'); 
+if(name == 'time');
     time     = netcdf.getVar (ncid,2);
      display(['size of time = ',sprintf(' %d',size(time))]);
 else
@@ -179,14 +179,14 @@ fvwnd     = '../data/wnd300.mnth.erain.nc';
 ncid      = netcdf.open ( fvwnd,'NC_NOWRITE' );
 varid     = 4;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
-if(name=='v'); 
+if(name=='v');
 
     vwnd     = netcdf.getVar (ncid,varid,'short');
     scale = netcdf.getAtt(ncid,varid,'scale_factor');
     offset= netcdf.getAtt(ncid,varid,'add_offset');
     vwnd = single(vwnd)*scale+offset;
     %v = squeeze(vwnd(:,:,lev,:));
-    v = vwnd; 
+    v = vwnd;
      display(['size of vwnd (',name,') = ',sprintf(' %d',size(v))]);
 end;
 
@@ -194,9 +194,9 @@ fpsi      = '../data/sf300.mnth.erain.nc' ;
 ncid      = netcdf.open ( fpsi,'NC_NOWRITE' );
 varid     = 3;
 [name,type,dimids,natts] = netcdf.inqVar(ncid,varid);
-if(name=='sf'); 
+if(name=='sf');
     %disp('reading streamfunction');
-    psi     = netcdf.getVar (ncid,varid);  
+    psi     = netcdf.getVar (ncid,varid);
     scale = netcdf.getAtt(ncid,varid,'scale_factor');
     offset= netcdf.getAtt(ncid,varid,'add_offset');
     psi = single(psi)*scale+offset;
@@ -224,7 +224,7 @@ for yr = 1980:1982
     end
 end
 ndate = size(mydate,1);
- 
+
 for in = 1:ndate
  for t = 1:size(time,1)
   date = datestr(double(time(t)/hoursPerDay) + TIMEbase);
@@ -268,7 +268,7 @@ yy(y==-90)=-inf;
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Taking the wind/psi fields
 
-%% u,v,psi; 
+%% u,v,psi;
 u0=(squeeze(mean(u(:,:,nt),3)))';
 [m,n]=size(u0);
 v0=(squeeze(mean(v(:,:,nt),3)))';
@@ -454,7 +454,7 @@ for ilocation=4:Nlocations
 
   frx=frcx(ilocation);
   fry=frcy(ilocation);
- 
+
   [subxx,subyy]=meshgrid(xx,yy(jmin:jmax));
   [subyy_interp2,subxx_interp2]=meshgrid(yy(jmin:jmax),xx);
   [XX,YY]=meshgrid(x,y(jmin:jmax));
@@ -471,17 +471,17 @@ for ilocation=4:Nlocations
   sdUbarMdy=dUbarMdy(jmin:jmax,:);
   sdVbarMdx=dVbarMdx(jmin:jmax,:);
   sdVbarMdy=dVbarMdy(jmin:jmax,:);
-  
+
   %%%%%%%%%%%%%
   %%%%  Estimating the initial Ks from the forcing site for a specific
   %%%%  BetaM and UbarM
-  
+
 
   Nk_wavenumbers=length(k_wavenumbers);
   for iomega=1:Nfrequencies
     omega=frequencies(iomega);
     period=round((2*pi/omega)/day);
-    
+
     for kkr=1:Nk_wavenumbers
       kk=k_wavenumbers(kkr);
       for RR=1:3
@@ -502,7 +502,7 @@ for ilocation=4:Nlocations
         %% and k by solving the polynomial equation based on the
         %% dispersion relation (equation 8 in Karoly 1983):
         %% change the following to have a non zero frequency:
-        
+
         %% Eli: added omega terms here for the non zero frequency case:
         cz(1)=Vint;
         cz(2)=Uint*spotk-omega;
@@ -514,22 +514,22 @@ for ilocation=4:Nlocations
         spotl=tl(RR);
         spotl
         Ks=(spotl^2+spotk^2)^0.5;
-        
+
         tstl=real(spotl)*r*cos(Lat(fry+4,1));
         if do_only_northern_hisphere_rays
           %%  If only interested in rays that go northward, break the
           %%  run if the starting l wavenumber has negative real part:
           tstl=real(spotl)*r*cos(Lat(fry+4,1));
 %IRA          tstl=real(spotl);
-          if real(spotl)<=0 
+          if real(spotl)<=0
             fprintf(1,['*** found real(l)<0, ray going to southern ' ...
                        'hemisphere, not tracing it\n']);
             fprintf('[real(l) ilocation kk RR]=[%g %g %g %g]' ...
                     ,real(spotl),ilocation,kk,RR);
-            break 
+            break
           end
         end
-        
+
         if do_complex_tracing==0
           %%  If not interested in complex ray tracing, break the run
           %%  if the starting l wavenumber has an imaginary part.  N.B.
@@ -544,19 +544,19 @@ for ilocation=4:Nlocations
             break
           end
         end
-        
+
         %%%%%%%%%%%
         %%  Starting the loop with the above initial k,l, and Ks
-        
+
         for t=1:Nsteps
           if rem(t,40)==0
             fprintf(1,'t = %g\n',t);
           end
-          
+
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           %%%%  Interpolating the fields to the current spot
-          
-        
+
+
           if use_interp2==0
             Uint=griddata(subyy,subxx,sUbarM,yi,xi,'cubic');
             Bint=griddata(subyy,subxx,sBetaM,yi,xi,'cubic');
@@ -591,15 +591,15 @@ for ilocation=4:Nlocations
 
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           %%%%  Solving for the changes
-          
+
           dkdt=-spotk*Uxint-spotl*Vxint+(qxyint*spotk-qxxint*spotl)/Ks^2;
           dldt=-spotk*Uyint-spotl*Vyint+(qyyint*spotk-qxyint*spotl)/Ks^2;
           dxdt=Uint+((spotk^2-spotl^2)*qyint-2*spotk*spotl*qxint)/Ks^4;
           dydt=Vint+(2*spotk*spotl*qyint+(spotk^2-spotl^2)*qxint)/Ks^4;
-          
+
           %%%%%%%%%%%%%%
           %%  Updating the changes
-          
+
           xi=xi+real(dxdt)*dt;
           if xi>=max(max(subxx))
             xi=xi-max(max(subxx));
@@ -608,10 +608,10 @@ for ilocation=4:Nlocations
           spotl=spotl+dldt*dt;
           spotk=spotk+dkdt*dt;
           Ks=(spotk^2+spotl^2)^0.5;
-          
+
           %%%%%%%%%%%%%%%
           %%  Finding the location
-          
+
           if use_interp2==0
             Yint=griddata(subyy,subxx,YY,yi,xi,'spline');
             Xint=griddata(subyy,subxx,XX,yi,xi,'spline');
@@ -627,7 +627,7 @@ for ilocation=4:Nlocations
                     ,Xint,Yint);
             break
           end
-          
+
           %%%%%%%%%%%%%%
           %%  Storing
 
@@ -643,7 +643,7 @@ for ilocation=4:Nlocations
           wchg(t,:)=[real(dldt)*adj real(dkdt)*adj imag(dldt)*adj imag(dkdt)*adj];
           rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
-          
+
           if rem(t,24)==0
 %            alL=[trl rnums inums rpchg ipchg wchg loc rsom isom];
             alL(t/24+1,:)=[t/24 loc(t,:) real(spotk)*adj real(spotl)*adj];
@@ -661,7 +661,7 @@ for ilocation=4:Nlocations
 %             eval(sprintf('dlmwrite output/raypath_k%d_period%d_loc%d_root%d alL'...
 %                          ,kk,period,ilocation,RR));
 %%          end
-          
+
 %%        end
       end % end do loop over roots
     end % end do loop over wavenumbers
