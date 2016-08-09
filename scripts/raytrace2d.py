@@ -130,7 +130,6 @@ for yr in range(1980,1983) :
 u = np.average(uwnd[nt[nt>0],:,:],axis=0)
 v = np.average(vwnd[nt[nt>0],:,:],axis=0)
 psi = np.average(sf[nt[nt>0],:,:],axis=0)
-print 'u[0,0]=',u[0,0]
 
 # Convert to Mercator projection
 
@@ -141,11 +140,13 @@ ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
 ym[0]=float('inf')
 ym[-1]=ym[0]
 
+dy = np.gradient(ym)
+dx = np.gradient(xm)
 
 um = u+1
 vm = u+1
 i = 0
-print "before u=",u[1,1] #!!!!!!!!!! u changed!!!!
+print "before u=",u[1,1] #!!!!!!!!!!make sure u have not changed!!!!
 for lat in lats:
     um[i,:]=u[i,:]/np.cos(lat*dtr)
     vm[i,:]=v[i,:]/np.cos(lat*dtr)
@@ -169,15 +170,38 @@ q = w.absolutevorticity()
 
 qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
+<<<<<<< Updated upstream
 #qbar checked!!!
 
 
+print "------------------------------"
 print "gradients"
 qx, qy = w.gradient(qbar)
+
+# Trick to calculate gradient for a scalar * cos(lat)
+#qbarnm = qbar+1
+#i=0
+#for lat in lats:
+#    qbarnm[i,:]=qbar[i,:]*np.cos(lat*dtr)
+#    i += 1
+#qx, qy = w.gradient(qbarnm)
+#print "   "
+
 qxx, qxy = w.gradient(qx)
 qyx, qyy = w.gradient(qy)
+print "qy[4,0]=",qy[4,0]
+print "qy[30,0]=",qy[30,0]
+print "qy[30,5]=",qy[30,5]
 
-qx1,dum = np.gradient(qbar, 83390)
+print "   "
+print "diff[4,0]: ", (qbar[3,0]-qbar[5,0])/(ym[3]-ym[5])
+
+print "diff[30,0]: ", (qbar[29,0]-qbar[31,0])/(ym[29]-ym[31])
+print "diff qbar[30,0]: ", (qbar[29,0]-qbar[31,0])
+print "diff ym[30,0]: ", (ym[29]-ym[31])
+
+qy1,dum = np.gradient(qbar, dy)
+dum, qx1 = np.gradient(qbar, dx[1])
 
 
 #---NetCDF write---------------------------------------------------------------
@@ -230,13 +254,22 @@ nc.close()
 ncout.close()
 #---End NetCDF write---------------------------------------------------------------
 
-print "qx=",qx[4,0]
-print "qx1=",qx1[4,0]
+print "   "
+print "qx[4,5]=",qx[4,5]
+print "qx[30,5]=",qx[30,5]
+print "qx1[4,5]=",qx1[4,5]
+print "qx1[30,5]=",qx1[30,5]
 #print "qxx=",qxx[4,0]
 
-umx, umy = w.gradient(um)
+# ===checked==============
+umx, umy = w.gradient(u)
 
-print "um1=",um[1,1]
-print "um=",um[4,0]
-print "ux=",umx[4,0]
-print "uy=",umy[4,0]
+# alternative um gradient
+dum, umx1 = np.gradient(um, dx[1])
+# ===============================
+#  for lon = 0 only!!!!
+umy1 = np.gradient(um[:,0], dy)
+
+print "  "
+print "umy[30,0]=",umy[30,0]
+print "umy1[30,0]=",umy1[30]
