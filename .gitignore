@@ -5,3 +5,4 @@ scripts/matlab/spherepack
 
 *.mat
 *.swp
+*.m~
