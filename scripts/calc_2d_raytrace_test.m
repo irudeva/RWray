@@ -299,15 +299,16 @@ PsiM=psi0;
 a=(2*7.2925e-5);%rotation rate of Earth (rad/s)
 %IRA b=(1+cos(2*Lat))/2;
 b=cos(Lat);
-trm1=a*b/r;
+b=b.*b;
+trm1=a*b/r;  %2omega*cos(lat)**2/rad
 c=b.*UbarM;
-d=1./(b.*b);
+d=1./b;
 cdy=c;cdy2=c;
 for i=2:nlat-1
   cdy(i,:)=(mean(c(i-1:i,:))-mean(c(i:i+1,:)))/(mean(yy(i-1:i))- ...
                                                 mean(yy(i:i+1)));
 end
-cdy=cdy.*d;
+cdy=d.*cdy;
 for i=3:nlat-2
   cdy2(i,:)=(mean(cdy(i-1:i,:))-mean(cdy(i:i+1,:)))/(mean(yy(i- ...
                                                     1:i))-mean(yy(i:i+1)));
@@ -368,27 +369,28 @@ d2qbardx2=px2(:,5:nlon+4);
 %%%%  Solving for dqbar/dy (should be same as BetaM), and d2qbar/dy2
 
 py1=NaN*ones(nlat,nlon+8); py2=py1;
-for i=(jmin-1):(jmax+1)
+for i=2:nlat-1
   py1(i,:)=(mean(tempqbar(i-1:i,:))-mean(tempqbar(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
-for i=jmin:jmax
+for i=3:nlat-2
   py2(i,:)=(mean(py1(i-1:i,:))-mean(py1(i:i+1,:)))/(mean(yy(i-1: ...
                                                     i))-mean(yy(i:i+1)));
 end
 
 dqbardy=py1(:,5:nlon+4);
-d2qbardy2a=py2(:,5:nlon+4);
+% Alternatevly: dqbardy=BetaM
+d2qbardy2=py2(:,5:nlon+4);
 
-%%%%  Alternately for d2qbar/dy2
+%%%%  Alternatevly: for d2qbar/dy2
 
 py2=NaN*ones(nlat,nlon);
-for i=4:nlat-3
+for i=3:nlat-2
   py2(i,:)=(mean(BetaM(i-1:i,:))-mean(BetaM(i:i+1,:)))/ ...
            (mean(yy(i-1:i))-mean(yy(i:i+1)));
 end
 
-d2qbardy2=py2;
+d2qbardy2a=py2;
 
 %% A debugging text for the calculation of d^2 qbar/dy^2:
 % sum(sum(d2qbardy2(6:68,6:138)-d2qbardy2a(6:68,6:138)))
