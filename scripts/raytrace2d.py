@@ -170,7 +170,6 @@ q = w.absolutevorticity()
 
 qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
-<<<<<<< Updated upstream
 #qbar checked!!!
 
 
