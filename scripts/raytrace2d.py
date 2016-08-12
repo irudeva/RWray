@@ -156,6 +156,7 @@ for lat in lats:
 # print "um[5,2]=",um[5,2]
 umy1, dum = np.gradient(um, 83390)
 print "umy1=",umy1[5,0]
+print umy1
 # print "um[5,0]=",um[5,0]
 # print "um[5,2]=",um[5,2]
 # print umx1
