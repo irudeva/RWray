@@ -2,10 +2,10 @@ begin
 ;************************************************
 ; read in netCDF file
 ;************************************************
- var = "umx"
+ var = "qmxy"
   a = addfile("../output/test/test."+var+".nc","r")
 ;************************************************
-  umx = a->umx
+  qmxy = a->qmxy
 ;************************************************
 ; create default plot
 ;************************************************
@@ -18,11 +18,13 @@ begin
   res@mpMaxLonF            = 360.
 
   res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = -20.			; set the minimum contour level
-  res@cnMaxLevelValF  = 20.			; set the maximum contour level
-  res@cnLevelSpacingF = 2.			; set the interval between contours
+  res@cnMinLevelValF  = -3.			; set the minimum contour level
+  res@cnMaxLevelValF  = 3.			; set the maximum contour level
+  res@cnLevelSpacingF = .5			; set the interval between contours
+
+  ; print(qmxy)
 
 
 
-  plot = gsn_csm_contour_map(wks,umx,res)         ; create a default plot
+  plot = gsn_csm_contour_map(wks,qmxy,res)         ; create a default plot
 end

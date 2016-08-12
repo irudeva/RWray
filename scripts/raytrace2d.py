@@ -153,20 +153,6 @@ for lat in lats:
     i += 1
 # um checked!!!
 
-
-
-print np.version.version
-umy1, dum = np.gradient(um, dx)  ##replace dx with dy!!!
-dum, umx1 = np.gradient(um, dx)
-#umy1, umx1 = np.gradient(um, dx,dy)
-# print "um[5,0]=",um[5,0]
-# print "um[5,2]=",um[5,2]
-# print "dx=",dx[1]
-# print "umx1[5,1]=",umx1[5,1]
-# print "umx1[100,100]=",umx1[100,100]
-
-
-
 # Create a VectorWind instance to handle the computations.
 uwnd, uwnd_info = prep_data(uwnd, 'tyx')
 vwnd, vwnd_info = prep_data(vwnd, 'tyx')
@@ -179,44 +165,121 @@ qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
 #qbar checked!!!
 
+
+print "------------------------------"
+print "gradients"
+print np.version.version
+print "  "
+print "----- wind gradients ---------"
+
 umx, umy = w.gradient(u)
 vmx, vmy = w.gradient(v)
 ## umx, umy Checked!!!
 
-print "------------------------------"
-print "gradients"
-qx, qy = w.gradient(qbar)
+#  alternatively
+umy1, dum = np.gradient(um, dx)  ##ERROR:replace dx with dy!!!
+dum, umx1 = np.gradient(um, dx)
+#umy1, umx1 = np.gradient(um, dx,dy)
+# print "um[5,0]=",um[5,0]
+# print "um[5,2]=",um[5,2]
+# print "dx=",dx[1]
+# print "umx1[5,1]=",umx1[5,1]
+# print "umx1[100,100]=",umx1[100,100]
 
-# Trick to calculate gradient for a scalar * cos(lat)
-#qbarnm = qbar+1
-#i=0
-#for lat in lats:
-#    qbarnm[i,:]=qbar[i,:]*np.cos(lat*dtr)
-#    i += 1
-#qx, qy = w.gradient(qbarnm)
-#print "   "
 
-qxx, qxy = w.gradient(qx)
-qyx, qyy = w.gradient(qy)
-print "qy[4,0]=",qy[4,0]
-print "qy[30,0]=",qy[30,0]
-print "qy[30,5]=",qy[30,5]
+print "  "
+print "----- q gradients ---------"
 
+#Trick to calculate gradient for a scalar * cos(lat)
+qbarnm = qbar+1
+i=0
+for lat in lats:
+    qbarnm[i,:]=qbar[i,:]*np.cos(lat*dtr)
+    i += 1
+
+qmx, qmy = w.gradient(qbarnm)
+print "qmx[4,0]=",qmx[4,0]
+print "qmy[4,0]=",qmy[4,0]
+print "  "
+
+#   alternatively
+qy, dum = np.gradient(qbar, dx)  ##ERROR:replace dx with dy!!!
+dum, qx = np.gradient(qbar, dx)
+print "qx[9,4]=",qx[9,4]
+print "qmx[9,4]=",qmx[9,4]
+print "  "
+
+print "  "
+print "----- q second derivatives ---------"
+
+#Trick to calculate gradient for a scalar * cos(lat)
+qmxm = qbar+1
+qmym = qbar+1
+i=0
+for lat in lats:
+    qmxm[i,:]=qmx[i,:]*np.cos(lat*dtr)
+    qmym[i,:]=qmy[i,:]*np.cos(lat*dtr)
+    i += 1
+
+qmxx, qmxy = w.gradient(qmxm)
+qmyx, qmyy = w.gradient(qmym)
+print "qmyy[4,0]=",qmyy[4,0]
+print "qmxx[30,0]=",qmxx[30,0]
+print "qmxy[30,5]=",qmxy[30,5]
 print "   "
-print "diff[4,0]: ", (qbar[3,0]-qbar[5,0])/(ym[3]-ym[5])
 
-print "diff[30,0]: ", (qbar[29,0]-qbar[31,0])/(ym[29]-ym[31])
-print "diff qbar[30,0]: ", (qbar[29,0]-qbar[31,0])
-print "diff ym[30,0]: ", (ym[29]-ym[31])
+# print "diff[4,5]: ", (qbar[4,4]-qbar[4,6])/(xm[4]-xm[6])
+# print "qx[4,5]=",qx[4,5]
+# print "qmx[4,5]=",qmx[4,5]
+# print "  "
+#
+# print "diff[30,5]: ", (qbar[30,4]-qbar[30,6])/(xm[4]-xm[6])
+# print "diff qbar[30,5]: ", (qbar[30,4]-qbar[30,6])
+# print "diff xm[30,5]: ", (xm[4]-xm[6])
+# print "qx[30,5]=",qx[30,5]
+# print "qmx[30,5]=",qmx[30,5]
+# print "  "
 
-#qy1,dum = np.gradient(qbar, dy)
-#dum, qx1 = np.gradient(qbar, dx[1])
+
+#----BetaM---------------------------------------------------------------------
+
+
+cos2=lats+1
+cos2[1:-2]=np.cos(dtr*lats[1:-2])
+cos2[1:-2]=cos2[1:-2]*cos2[1:-2]
+cos2[0]=float('inf')
+cos2[-1]=cos2[0]
+
+cosux, cosuy=w.gradient(u*cos2)
+cosuyy = qbar+1
+i=0
+for lat in lats:
+    cosuyy[i,:]=cosuy[i,:]*np.cos(lat*dtr)
+    i += 1
+dum, cosuyy = w.gradient(cosuy)
+
+tmp = cos2+1
+tmp[1:-2] = 2*e_omega *cos2[1:-2]/radius
+tmp[0]=float('inf')
+tmp[-1]=tmp[0]
+BetaM = np.ones(241,480)
+BetaM[1:-2,:] = tmp[-1:2]*ones
+
+BetaM[1:-2]=2*e_omega *cos2[1:-2]/radius-cosuyy
+
+BetaM[0]=float('inf')
+BetaM[-1]=BetaM[0]
+
+
+
+print BetaM[4]
+
 
 
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-ncvar = 'umy'
+ncvar = 'qy'
 ftest = '../output/test/test.%s.nc' % (ncvar)
 ncout = Dataset(ftest, 'w', format='NETCDF4')
 ncout.description = "TEST %s" % (ftest)
@@ -244,8 +307,7 @@ ncout.variables[dimnam[1]][:] = lats
 
 ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
 #ncout_var.long_name = 'streamfunction'
-#var_scale = 1.e-9
-var_scale = 1.e-6
+var_scale = 1.e-18
 var_add   = 0.
 ncout_var.scale_factor = var_scale
 ncout_var.add_offset   = var_add
@@ -256,24 +318,9 @@ ncout_var.units        = 'not specified'
 
 #print qx.shape
 #print ncout_var.shape
-ncout_var[:] = umy
+ncout_var[:] = qy
 
 
 nc.close()
 ncout.close()
 #---End NetCDF write---------------------------------------------------------------
-
-# print "   "
-# print "qx[4,5]=",qx[4,5]
-# print "qx[30,5]=",qx[30,5]
-# print "qx1[4,5]=",qx1[4,5]
-# print "qx1[30,5]=",qx1[30,5]
-# #print "qxx=",qxx[4,0]
-#
-#
-# #  for lon = 0 only!!!!
-# umy1 = np.gradient(um[:,0], dy)
-#
-# print "  "
-# print "umy[30,0]=",umy[30,0]
-# print "umy1[30,0]=",umy1[30]
