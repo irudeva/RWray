@@ -18,5 +18,5 @@ yplot=90:-.75:-90;
 %figure;
 %v=[-1.5:0.25:1.5];
 %v=v*1.e-4;
-fig4=contour(XPLOT,YPLOT,dUbarMdy(3:239,:),v);
-title('dUbarMdy');
+fig4=contour(XPLOT,YPLOT,dUbarMdx(3:239,:),v);
+title('dUbarMdx');

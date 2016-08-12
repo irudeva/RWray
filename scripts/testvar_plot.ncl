@@ -2,10 +2,10 @@ begin
 ;************************************************
 ; read in netCDF file
 ;************************************************
- var = "umy1"
+ var = "umx"
   a = addfile("../output/test/test."+var+".nc","r")
 ;************************************************
-  umy1 = a->umy1                               ; read July zonal winds
+  umx = a->umx
 ;************************************************
 ; create default plot
 ;************************************************
@@ -17,6 +17,12 @@ begin
   res@mpMinLonF            =  0.
   res@mpMaxLonF            = 360.
 
+  res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = -20.			; set the minimum contour level
+  res@cnMaxLevelValF  = 20.			; set the maximum contour level
+  res@cnLevelSpacingF = 2.			; set the interval between contours
 
-  plot = gsn_csm_contour_map(wks,umy1,res)         ; create a default plot
+
+
+  plot = gsn_csm_contour_map(wks,umx,res)         ; create a default plot
 end

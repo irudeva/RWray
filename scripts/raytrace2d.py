@@ -153,14 +153,20 @@ for lat in lats:
     i += 1
 # um checked!!!
 
+
+
+print np.version.version
+umy1, dum = np.gradient(um, dx)  ##replace dx with dy!!!
+dum, umx1 = np.gradient(um, dx)
+#umy1, umx1 = np.gradient(um, dx,dy)
 # print "um[5,0]=",um[5,0]
 # print "um[5,2]=",um[5,2]
-umy1, dum = np.gradient(um, 83390)
-print "umy1=",umy1[5,0]
-print umy1
-# print "um[5,0]=",um[5,0]
-# print "um[5,2]=",um[5,2]
-# print umx1
+# print "dx=",dx[1]
+# print "umx1[5,1]=",umx1[5,1]
+# print "umx1[100,100]=",umx1[100,100]
+
+
+
 # Create a VectorWind instance to handle the computations.
 uwnd, uwnd_info = prep_data(uwnd, 'tyx')
 vwnd, vwnd_info = prep_data(vwnd, 'tyx')
@@ -173,6 +179,9 @@ qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
 #qbar checked!!!
 
+umx, umy = w.gradient(u)
+vmx, vmy = w.gradient(v)
+## umx, umy Checked!!!
 
 print "------------------------------"
 print "gradients"
@@ -200,14 +209,14 @@ print "diff[30,0]: ", (qbar[29,0]-qbar[31,0])/(ym[29]-ym[31])
 print "diff qbar[30,0]: ", (qbar[29,0]-qbar[31,0])
 print "diff ym[30,0]: ", (ym[29]-ym[31])
 
-qy1,dum = np.gradient(qbar, dy)
-dum, qx1 = np.gradient(qbar, dx[1])
+#qy1,dum = np.gradient(qbar, dy)
+#dum, qx1 = np.gradient(qbar, dx[1])
 
 
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-ncvar = 'umy1'
+ncvar = 'umy'
 ftest = '../output/test/test.%s.nc' % (ncvar)
 ncout = Dataset(ftest, 'w', format='NETCDF4')
 ncout.description = "TEST %s" % (ftest)
@@ -247,29 +256,24 @@ ncout_var.units        = 'not specified'
 
 #print qx.shape
 #print ncout_var.shape
-ncout_var[:] = umy1
+ncout_var[:] = umy
 
 
 nc.close()
 ncout.close()
 #---End NetCDF write---------------------------------------------------------------
 
-print "   "
-print "qx[4,5]=",qx[4,5]
-print "qx[30,5]=",qx[30,5]
-print "qx1[4,5]=",qx1[4,5]
-print "qx1[30,5]=",qx1[30,5]
-#print "qxx=",qxx[4,0]
-
-# ===checked==============
-umx, umy = w.gradient(u)
-
-# alternative um gradient
-dum, umx1 = np.gradient(um, dx[1])
-# ===============================
-#  for lon = 0 only!!!!
-umy1 = np.gradient(um[:,0], dy)
-
-print "  "
-print "umy[30,0]=",umy[30,0]
-print "umy1[30,0]=",umy1[30]
+# print "   "
+# print "qx[4,5]=",qx[4,5]
+# print "qx[30,5]=",qx[30,5]
+# print "qx1[4,5]=",qx1[4,5]
+# print "qx1[30,5]=",qx1[30,5]
+# #print "qxx=",qxx[4,0]
+#
+#
+# #  for lon = 0 only!!!!
+# umy1 = np.gradient(um[:,0], dy)
+#
+# print "  "
+# print "umy[30,0]=",umy[30,0]
+# print "umy1[30,0]=",umy1[30]
