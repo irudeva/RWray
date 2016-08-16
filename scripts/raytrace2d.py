@@ -287,3 +287,23 @@ ncout_var[:] = qy
 nc.close()
 ncout.close()
 #---End NetCDF write---------------------------------------------------------------
+print "All derivatives done"
+print "  "
+
+#==================================================================================
+print "Start ray tracing:"
+print "  "
+#----------------------------------------------------------------------------------
+
+# Solving for the ray path for different forcing sites (initial locations of rays):
+
+Nloc = lon0.size
+for iloc in range(0,Nloc) :
+    print "Location #", iloc
+
+    i = np.argmin(np.absolute(lons-lon0[iloc]))
+    j = np.argmin(np.absolute(lats-lat0[iloc]))
+
+    print "Initial location of rays: "
+    print "Lon0: %d corresponds to %d" % (lon0[iloc],lons[i])
+    print "Lat0: %d corresponds to %d" % (lat0[iloc],lats[j])
