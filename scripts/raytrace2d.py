@@ -305,5 +305,6 @@ for iloc in range(0,Nloc) :
     j = np.argmin(np.absolute(lats-lat0[iloc]))
 
     print "Initial location of rays: "
-    print "Lon0: %d corresponds to %d" % (lon0[iloc],lons[i])
-    print "Lat0: %d corresponds to %d" % (lat0[iloc],lats[j])
+    print "Lon0: %6.2f corresponds to %6.2f" % (lon0[iloc],lons[i])
+    print "Lat0: %6.2f corresponds to %6.2f" % (lat0[iloc],lats[j+1])
+    
