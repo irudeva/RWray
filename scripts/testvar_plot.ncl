@@ -2,10 +2,10 @@ begin
 ;************************************************
 ; read in netCDF file
 ;************************************************
- var = "qmxy"
+ var = "BetaM"
   a = addfile("../output/test/test."+var+".nc","r")
 ;************************************************
-  qmxy = a->qmxy
+  BetaM = a->BetaM
 ;************************************************
 ; create default plot
 ;************************************************
@@ -18,13 +18,13 @@ begin
   res@mpMaxLonF            = 360.
 
   res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = -3.			; set the minimum contour level
-  res@cnMaxLevelValF  = 3.			; set the maximum contour level
-  res@cnLevelSpacingF = .5			; set the interval between contours
+  res@cnMinLevelValF  = -500.			; set the minimum contour level
+  res@cnMaxLevelValF  = 500.			; set the maximum contour level
+  res@cnLevelSpacingF = 10.			; set the interval between contours
 
-  ; print(qmxy)
+  ; print(BetaM)
 
 
 
-  plot = gsn_csm_contour_map(wks,qmxy,res)         ; create a default plot
+  plot = gsn_csm_contour_map(wks,BetaM,res)         ; create a default plot
 end

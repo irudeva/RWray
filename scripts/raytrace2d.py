@@ -143,14 +143,13 @@ ym[-1]=ym[0]
 dy = np.gradient(ym)
 dx = np.gradient(xm)
 
-um = u+1
-vm = u+1
-i = 0
-print "before u=",u[1,1] #!!!!!!!!!!make sure u have not changed!!!!
-for lat in lats:
-    um[i,:]=u[i,:]/np.cos(lat*dtr)
-    vm[i,:]=v[i,:]/np.cos(lat*dtr)
-    i += 1
+coslat=np.cos(dtr*lats)
+#coslat[0]=0   # a very small number is used instead
+#coslat[-1]=0  # ----"""----
+
+# velocity in the Mercator projection
+um=u[i,:]/coslat[:,None]
+vm=v[i,:]/coslat[:,None]
 # um checked!!!
 
 # Create a VectorWind instance to handle the computations.
@@ -176,57 +175,39 @@ umx, umy = w.gradient(u)
 vmx, vmy = w.gradient(v)
 ## umx, umy Checked!!!
 
-#  alternatively
-umy1, dum = np.gradient(um, dx)  ##ERROR:replace dx with dy!!!
-dum, umx1 = np.gradient(um, dx)
-#umy1, umx1 = np.gradient(um, dx,dy)
-# print "um[5,0]=",um[5,0]
-# print "um[5,2]=",um[5,2]
-# print "dx=",dx[1]
-# print "umx1[5,1]=",umx1[5,1]
-# print "umx1[100,100]=",umx1[100,100]
-
+#  alternatively  -  dy does not work!!!
+#umy1, dum = np.gradient(um, dx)  ##ERROR:replace dx with dy!!!
+#dum, umx1 = np.gradient(um, dx)
 
 print "  "
 print "----- q gradients ---------"
 
 #Trick to calculate gradient for a scalar * cos(lat)
-qbarnm = qbar+1
-i=0
-for lat in lats:
-    qbarnm[i,:]=qbar[i,:]*np.cos(lat*dtr)
-    i += 1
 
-qmx, qmy = w.gradient(qbarnm)
-print "qmx[4,0]=",qmx[4,0]
-print "qmy[4,0]=",qmy[4,0]
-print "  "
+qx, qy = w.gradient(qbar*coslat[:,None])
+#print "qmx[4,0]=",qmx[4,0]
+#print "qmy[4,0]=",qmy[4,0]
+#print "  "
 
-#   alternatively
-qy, dum = np.gradient(qbar, dx)  ##ERROR:replace dx with dy!!!
-dum, qx = np.gradient(qbar, dx)
-print "qx[9,4]=",qx[9,4]
-print "qmx[9,4]=",qmx[9,4]
-print "  "
+#   alternatively -  dy does not work
+#qy, dum = np.gradient(qbar, dx)  ##ERROR:replace dx with dy!!!
+#dum, qx = np.gradient(qbar, dx)
+#print "qx[9,4]=",qx[9,4]
+#print "qmx[9,4]=",qmx[9,4]
+#print "  "
+# w.gradient is different from np.gradient at high lat >60N/S
 
 print "  "
 print "----- q second derivatives ---------"
 
 #Trick to calculate gradient for a scalar * cos(lat)
-qmxm = qbar+1
-qmym = qbar+1
-i=0
-for lat in lats:
-    qmxm[i,:]=qmx[i,:]*np.cos(lat*dtr)
-    qmym[i,:]=qmy[i,:]*np.cos(lat*dtr)
-    i += 1
 
-qmxx, qmxy = w.gradient(qmxm)
-qmyx, qmyy = w.gradient(qmym)
-print "qmyy[4,0]=",qmyy[4,0]
-print "qmxx[30,0]=",qmxx[30,0]
-print "qmxy[30,5]=",qmxy[30,5]
-print "   "
+qxx, qxy = w.gradient(qx*coslat[:,None])
+qyx, qyy = w.gradient(qy*coslat[:,None])
+# print "qmyy[4,0]=",qmyy[4,0]
+# print "qmxx[30,0]=",qmxx[30,0]
+# print "qmxy[30,5]=",qmxy[30,5]
+# print "   "
 
 # print "diff[4,5]: ", (qbar[4,4]-qbar[4,6])/(xm[4]-xm[6])
 # print "qx[4,5]=",qx[4,5]
@@ -242,39 +223,21 @@ print "   "
 
 
 #----BetaM---------------------------------------------------------------------
+print 'Calculate BetaM'
 
+# BetaM == qy - checked !!!!
 
-cos2=lats+1
-cos2[1:-2]=np.cos(dtr*lats[1:-2])
-cos2[1:-2]=cos2[1:-2]*cos2[1:-2]
-cos2[0]=float('inf')
-cos2[-1]=cos2[0]
+#coslat[0]=0
+#coslat[-1]=cos1[0]
+cos2=coslat*coslat
 
-cosux, cosuy=w.gradient(u*cos2)
-cosuyy = qbar+1
-i=0
-for lat in lats:
-    cosuyy[i,:]=cosuy[i,:]*np.cos(lat*dtr)
-    i += 1
-dum, cosuyy = w.gradient(cosuy)
+dum, cosuy=w.gradient(u*cos2[:,None])
+dum, cosuyy = w.gradient(cosuy/coslat[:,None])
 
-tmp = cos2+1
-tmp[1:-2] = 2*e_omega *cos2[1:-2]/radius
-tmp[0]=float('inf')
-tmp[-1]=tmp[0]
-BetaM = np.ones(241,480)
-BetaM[1:-2,:] = tmp[-1:2]*ones
+tmp = 2*e_omega *cos2/radius
+BetaM=tmp[:,None]-cosuyy
 
-BetaM[1:-2]=2*e_omega *cos2[1:-2]/radius-cosuyy
-
-BetaM[0]=float('inf')
-BetaM[-1]=BetaM[0]
-
-
-
-print BetaM[4]
-
-
+#quit()
 
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
@@ -307,7 +270,7 @@ ncout.variables[dimnam[1]][:] = lats
 
 ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
 #ncout_var.long_name = 'streamfunction'
-var_scale = 1.e-18
+var_scale = 1.e-12
 var_add   = 0.
 ncout_var.scale_factor = var_scale
 ncout_var.add_offset   = var_add
