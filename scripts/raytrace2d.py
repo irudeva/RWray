@@ -334,7 +334,7 @@ for iloc in range(0,Nloc) :
             print "  initial l = ", lroot*radius*coslat[j]
             for R in range(0,3) :
                 spotl=lroot[R]
-                print "  Root # ", R, "  l = ", spotl
+                print "  Root # ", R, "  spotl = ", spotl
                 spotl=lroot[R]
                 spotk = k/(radius*coslat[j]) #refresh!!!
                 Ks=np.sqrt(spotl*spotl+spotk*spotk)
@@ -347,6 +347,17 @@ for iloc in range(0,Nloc) :
                         print "  initial k ", k
                         print "  Root # ", R
                         quit()
+
+                        ## Starting the loop with the above initial k,l, and Ks
+
+                        for t in range(0,Nsteps) :
+                            if np.equal(np.remainder(t,40),0) :
+                                print "    t = ", t
+
+    
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          %%%%  Interpolating the fields to the current spot
+
 
                 print "All good to here"
                 quit()
