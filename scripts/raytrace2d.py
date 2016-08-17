@@ -53,8 +53,8 @@ elif complex_tracing is False :
     print "Complex tracing is off"
 else :
     print 'complex_tracing=',complex_tracing
-    print "CHECK: What to do in case of caplex solutions?"
-    exit()
+    print "CHECK: What to do in case of complex solutions?"
+    quit()
 print '--------------------'
 
 # Read data
@@ -148,8 +148,8 @@ coslat=np.cos(dtr*lats)
 #coslat[-1]=0  # ----"""----
 
 # velocity in the Mercator projection
-um=u[i,:]/coslat[:,None]
-vm=v[i,:]/coslat[:,None]
+um=u/coslat[:,None]
+vm=v/coslat[:,None]
 # um checked!!!
 
 # Create a VectorWind instance to handle the computations.
@@ -242,7 +242,7 @@ BetaM=tmp[:,None]-cosuyy
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-ncvar = 'qy'
+ncvar = 'qx'
 ftest = '../output/test/test.%s.nc' % (ncvar)
 ncout = Dataset(ftest, 'w', format='NETCDF4')
 ncout.description = "TEST %s" % (ftest)
@@ -281,30 +281,72 @@ ncout_var.units        = 'not specified'
 
 #print qx.shape
 #print ncout_var.shape
-ncout_var[:] = qy
+ncout_var[:] = qx
 
 
 nc.close()
 ncout.close()
-#---End NetCDF write---------------------------------------------------------------
+##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"
 print "  "
 
-#==================================================================================
+##==================================================================================
 print "Start ray tracing:"
 print "  "
-#----------------------------------------------------------------------------------
+##----------------------------------------------------------------------------------
 
-# Solving for the ray path for different forcing sites (initial locations of rays):
+## Solving for the ray path for different forcing sites (initial locations of rays):
 
 Nloc = lon0.size
 for iloc in range(0,Nloc) :
-    print "Location #", iloc
+    print " Location #", iloc
 
     i = np.argmin(np.absolute(lons-lon0[iloc]))
     j = np.argmin(np.absolute(lats-lat0[iloc]))
 
-    print "Initial location of rays: "
-    print "Lon0: %6.2f corresponds to %6.2f" % (lon0[iloc],lons[i])
-    print "Lat0: %6.2f corresponds to %6.2f" % (lat0[iloc],lats[j+1])
-    
+    print "  Initial location of rays: "
+    print "   Lon0: %6.2f corresponds to %6.2f" % (lon0[iloc],lons[i])
+    print "   Lat0: %6.2f corresponds to %6.2f" % (lat0[iloc],lats[j])
+
+
+
+    ##  Estimating the initial Ks from the forcing site for a specific BetaM and UbarM
+
+    for fr in freq :
+        #    period=round((2*pi/fr)/day);
+        print "  Ray tracing: period", 2*pi/(fr*day)
+        for k in k_wavenumbers :
+            print "  initial k = ", k
+            spotk = k/(radius*coslat[j])
+            #print "spotk=", spotk
+
+            ##  Calculate the initial l wave number from the initial omega
+            ##  and k by solving the polynomial equation based on the
+            ##  dispersion relation (equation 8 in Karoly 1983):
+            ##  hange the following to have a non zero frequency:
+            coeff = np.zeros(4)
+            coeff[0]=vm[j,i]
+            coeff[1]=um[j,i]*spotk-fr;
+            coeff[2]=vm[j,i]*spotk*spotk+qx[j,i]
+            coeff[3]=um[j,i]*np.power(spotk,3)-qy[j,i]*spotk-fr*spotk*spotk
+
+            lroot = np.roots(coeff)
+            print "  initial l = ", lroot*radius*coslat[j]
+            for R in range(0,3) :
+                spotl=lroot[R]
+                print "  Root # ", R, "  l = ", spotl
+                spotl=lroot[R]
+                spotk = k/(radius*coslat[j]) #refresh!!!
+                Ks=np.sqrt(spotl*spotl+spotk*spotk)
+
+                if complex_tracing is False :
+                    if np.not_equal(np.imag(spotl),0) :
+                        print "   *** found complex initial l, not tracing. \n"
+                        print " Location #", iloc
+                        print "  Ray tracing: period", 2*pi/(fr*day)
+                        print "  initial k ", k
+                        print "  Root # ", R
+                        quit()
+
+                print "All good to here"
+                quit()

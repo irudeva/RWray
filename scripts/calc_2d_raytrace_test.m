@@ -67,8 +67,8 @@ close all; clear all
 %frcy=[35 35 35 35  31 31 31 31];
 % frcx=[70:5:110 70:5:110];
 % frcy=[ones(1,9)*31 ones(1,9)*35];
-frcx=[154 1 1 1];
-frcy=[97 15 90 77];
+frcx=[1];
+frcy=[81];
 Nlocations=length(frcx);
 if length(frcy)~=length(frcx)
   fprintf(1,'*** frcx,y length compatibility problem: length(frcx,y)=(%d,%d)\n'...
@@ -450,10 +450,10 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for ilocation=4:Nlocations
+for ilocation=1:Nlocations
 
   frx=frcx(ilocation);
-  fry=frcy(ilocation);
+  fry=frcy(ilocation)-jmin+1;
 
   [subxx,subyy]=meshgrid(xx,yy(jmin:jmax));
   [subyy_interp2,subxx_interp2]=meshgrid(yy(jmin:jmax),xx);
@@ -489,7 +489,7 @@ for ilocation=4:Nlocations
 %                ,period,kk,RR,ilocation);
         fprintf('Ray tracing...  ilocation=%d, period=%d, k=%d, root=%d\n' ...
                 ,ilocation, period,kk, RR);
-        spotk=kk/r/cos(Lat(fry+4,frx));
+        spotk=kk/r/cos(Lat(fry+jmin-1,frx));
 %IRA        spotk=kk/r;
 %        spotk=kk;
 %        subk=[ilocation kk RR];

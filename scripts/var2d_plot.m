@@ -7,7 +7,11 @@ fig1=contour(XPLOT,YPLOT,BetaM(3:239,:));
 title('BetaM')
 
 figure;
-fig2=contour(XPLOT1,YPLOT1,dqbardy(4:238,:));
+fig2=contour(XPLOT1,YPLOT1,dqbardx(4:238,:));
+title('qbardx')
+
+figure;
+fig3=contour(XPLOT1,YPLOT1,dqbardy(4:238,:));
 title('qbardy')
 
 %v=[-1:0.5:1];
