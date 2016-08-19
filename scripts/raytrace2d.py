@@ -307,4 +307,3 @@ for iloc in range(0,Nloc) :
     print "Initial location of rays: "
     print "Lon0: %6.2f corresponds to %6.2f" % (lon0[iloc],lons[i])
     print "Lat0: %6.2f corresponds to %6.2f" % (lat0[iloc],lats[j+1])
-    
