@@ -3,12 +3,30 @@ import numpy as np
 import datetime as datetime  # Python standard library datetime  module
 from  windspharm.standard import VectorWind
 from windspharm.tools import prep_data, recover_data, order_latdim
+from scipy import interpolate
 
 
 # import cartopy.crs as ccrs
 # from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 # from cartopy.util import add_cyclic_point
 
+# Runge-Kutta method
+def rk4(f, x0, y0, x1, n):
+    vx = [0] * (n + 1)
+    vy = [0] * (n + 1)
+    h = (x1 - x0) / float(n)
+    vx[0] = x = x0
+    vy[0] = y = y0
+    for i in range(1, n + 1):
+        k1 = h * f(x, y)
+        k2 = h * f(x + 0.5 * h, y + 0.5 * k1)
+        k3 = h * f(x + 0.5 * h, y + 0.5 * k2)
+        k4 = h * f(x + h, y + k3)
+        vx[i] = x = x0 + i * h
+        vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
+    return vx, vy
+def f(x, y):
+    return x * np.sqrt(y)
 
 print "Calculating 2d ray paths"
 
@@ -288,14 +306,34 @@ nc.close()
 ncout.close()
 ##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"
-print "  "
 
-##==================================================================================
+##---Interpolation-----------------------------------------------------------------
+print "  "
+print "Interpolation"
+
+
+umint = interpolate.interp2d(xm, ym[1:-1], um[1:-1,:], kind='cubic')
+vmint = interpolate.interp2d(xm, ym[1:-1], vm[1:-1,:], kind='cubic')
+
+umxint = interpolate.interp2d(xm, ym[1:-1], umx[1:-1,:], kind='cubic')
+umyint = interpolate.interp2d(xm, ym[1:-1], umy[1:-1,:], kind='cubic')
+vmxint = interpolate.interp2d(xm, ym[1:-1], vmx[1:-1,:], kind='cubic')
+vmyint = interpolate.interp2d(xm, ym[1:-1], vmy[1:-1,:], kind='cubic')
+
+qxint = interpolate.interp2d(xm, ym[1:-1], qx[1:-1,:], kind='cubic')
+qyint = interpolate.interp2d(xm, ym[1:-1], qy[1:-1,:], kind='cubic')
+
+qxxint = interpolate.interp2d(xm, ym[1:-1], qxx[1:-1,:], kind='cubic')
+qyyint = interpolate.interp2d(xm, ym[1:-1], qyy[1:-1,:], kind='cubic')
+
+qxyint = interpolate.interp2d(xm, ym[1:-1], qxy[1:-1,:], kind='cubic')
+
+###==================================================================================
+print "  "
 print "Start ray tracing:"
 print "  "
 ##----------------------------------------------------------------------------------
-
-## Solving for the ray path for different forcing sites (initial locations of rays):
+# Solving for the ray path for different forcing sites (initial locations of rays):
 
 Nloc = lon0.size
 for iloc in range(0,Nloc) :
@@ -349,15 +387,154 @@ for iloc in range(0,Nloc) :
                         print "  Root # ", R
                         quit()
 
-                        ## Starting the loop with the above initial k,l, and Ks
+                ## Starting the loop with the above initial k,l, and Ks
 
-                        for t in range(0,Nsteps) :
-                            if np.equal(np.remainder(t,40),0) :
-                                print "    t = ", t
+                i1=i
+                j1=j
+
+#                for t in range(0,Nsteps) :
+                for t in range(0,1) :
+                    #if np.equal(np.remainder(t,40),0) :
+                    #    print "    t = ", t
+                    print "    t = ", t
+
+                    if t==0 :
+                        xm1=xm[i]
+                        ym1=ym[j]
+
+                    um1 = umint(xm1,ym1)
+                    vm1 = vmint(xm1,ym1)
+
+                    umx1 = umxint(xm1,ym1)
+                    umy1 = umyint(xm1,ym1)
+                    vmx1 = vmxint(xm1,ym1)
+                    vmy1 = vmyint(xm1,ym1)
+
+                    qx1 = qxint(xm1,ym1)
+                    qy1 = qyint(xm1,ym1)
+
+                    qxx1 = qxxint(xm1,ym1)
+                    qyy1 = qyyint(xm1,ym1)
+                    qxy1 = qxyint(xm1,ym1)
+
+                    # Solving for the changes (eq.9 and 10 in Karoly 1983)
+                    ug=um1+((spotk*spotk-spotl*spotl)*qy1-2*spotk*spotl*qx1)/np.power(Ks,4)
+                    vg=vm1+((spotk*spotk-spotl*spotl)*qx1+2*spotk*spotl*qy1)/np.power(Ks,4)
+
+                    kt=-spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
+                    lt=-spotk*umy1-spotl*vmy1+(qyy1*spotk-qxy1*spotl)/np.square(Ks)
+
+                    print 'um1=',um1
+                    print 'vm1=',vm1
+                    print ' '
+                    print 'umx1=',umx1
+                    print 'umy1=',umy1
+                    print 'vmx1=',vmx1 #so-so
+                    print 'vmy1=',vmy1
+                    print ' '
+                    print 'qx1=',qx1
+                    print 'qy1=',qy1  #sing is different!
+                    print ' '
+                    print 'qxx1=',qxx1
+                    print 'qyy1=',qyy1
+                    print 'qxy1=',qxy1 #sign is diff!
+
+                    print 'dxdt=',ug
+                    print 'dydt=',vg
 
 
-          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-          %%%%  Interpolating the fields to the current spot
+                    print kt  # 4 times large here
+                    print lt
+
+                    #Appliing changes
+
+                    print 'new spotk=', spotk+kt*dt
+
+                    ug1=um1+((spotk*spotk-spotl*spotl)*qy1-2*spotk*spotl*qx1)/np.power(Ks,4)
+                    vg1=vm1+((spotk*spotk-spotl*spotl)*qx1+2*spotk*spotl*qy1)/np.power(Ks,4)
+
+                    kt1=-spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
+                    lt1=-spotk*umy1-spotl*vmy1+(qyy1*spotk-qxy1*spotl)/np.square(Ks)
+
+                    dk = 0.5*kt1*dt
+                    dk2 = -spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
+
+        #   % RK step 1
+        #   [dxdt1,dydt1,dkdt1,dldt1] = rkstep(xm,ym,rdatam,x,y,k,l,theory);
+        #   dx=0.5*dxdt1*dt;
+        #   dy=0.5*dydt1*dt;
+        #   dk=0.5*dkdt1*dt;
+        #   dl=0.5*dldt1*dt;
+        #   if isempty(dx+dy+dk+dl);break;end
+        #
+        #   % RK step 2
+        #   [dxdt2,dydt2,dkdt2,dldt2] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
+        #   dx=0.5*dxdt2*dt;
+        #   dy=0.5*dydt2*dt;
+        #   dk=0.5*dkdt2*dt;
+        #   dl=0.5*dldt2*dt;
+        #   if isempty(dx+dy+dk+dl);break;end
+        #
+        #   % RK step 3
+        #   [dxdt3,dydt3,dkdt3,dldt3] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
+        #   dx=0.5*dxdt3*dt;
+        #   dy=0.5*dydt3*dt;
+        #   dk=0.5*dkdt3*dt;
+        #   dl=0.5*dldt3*dt;
+        #   if isempty(dx+dy+dk+dl);break;end
+        #
+        #   % RK step 4
+        #   [dxdt4,dydt4,dkdt4,dldt4] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
+        #   dx=dt*(dxdt1+2*dxdt2+2*dxdt3+dxdt4)/6;
+        #   dy=dt*(dydt1+2*dydt2+2*dydt3+dydt4)/6;
+        #   dk=dt*(dkdt1+2*dkdt2+2*dkdt3+dkdt4)/6;
+        #   dl=dt*(dldt1+2*dldt2+2*dldt3+dldt4)/6;
+        #
+        #   if isempty(dx+dy+dk+dl);break;end
+        #
+        #   xrp(it)=x+dx;
+        #   krp(it)=k+dk;
+        #
+        #   lrp(it)=l+dl;
+        #   yrp(it)=y+dy;
+
+
+
+
+
+                    vx, vy = rk4(f, 0, 1, 10, 100)
+
+
+              #
+            #   xi=xi+real(dxdt)*dt;
+            #   if xi>=max(max(subxx))
+            #     xi=xi-max(max(subxx));
+            #   end
+            #   yi=yi+real(dydt)*dt;
+            #   spotl=spotl+dldt*dt;
+            #   spotk=spotk+dkdt*dt;
+            #   Ks=(spotk^2+spotl^2)^0.5;
+              #
+            #   %%%%%%%%%%%%%%%
+            #   %%  Finding the location
+              #
+            #   if use_interp2==0
+            #     Yint=griddata(subyy,subxx,YY,yi,xi,'spline');
+            #     Xint=griddata(subyy,subxx,XX,yi,xi,'spline');
+            #   else
+            #     Yint=interp2(subyy_interp2,subxx_interp2,YY',yi,xi,'spline');
+            #     Xint=interp2(subyy_interp2,subxx_interp2,XX',yi,xi,'spline');
+            #   end
+              #
+            #   %% make sure ray does not leave the domain where
+            #   %% background fields are given:
+            #   if Yint<y(jmax) || Yint>y(jmin)
+            #     fprintf(1,'*** Yint>Ymax, breaking.  (Xint,Yint)=(%g,%g)\n'...
+            #             ,Xint,Yint);
+            #     break
+            #   end
+              #
+            #
 
 
                 print "All good to here"
