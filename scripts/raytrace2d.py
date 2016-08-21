@@ -10,23 +10,6 @@ from scipy import interpolate
 # from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 # from cartopy.util import add_cyclic_point
 
-# Runge-Kutta method
-def rk4(f, x0, y0, x1, n):
-    vx = [0] * (n + 1)
-    vy = [0] * (n + 1)
-    h = (x1 - x0) / float(n)
-    vx[0] = x = x0
-    vy[0] = y = y0
-    for i in range(1, n + 1):
-        k1 = h * f(x, y)
-        k2 = h * f(x + 0.5 * h, y + 0.5 * k1)
-        k3 = h * f(x + 0.5 * h, y + 0.5 * k2)
-        k4 = h * f(x + h, y + k3)
-        vx[i] = x = x0 + i * h
-        vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
-    return vx, vy
-def f(x, y):
-    return x * np.sqrt(y)
 
 print "Calculating 2d ray paths"
 
@@ -328,6 +311,51 @@ qyyint = interpolate.interp2d(xm, ym[1:-1], qyy[1:-1,:], kind='cubic')
 
 qxyint = interpolate.interp2d(xm, ym[1:-1], qxy[1:-1,:], kind='cubic')
 
+
+##---Derivatives(eq.9 and 10 in Karoly 1983)---------------------------------------
+
+def ug(spotk,spotl,um,qx,qy) :
+    Ks2=spotl*spotl+spotk*spotk
+    Ks4=Ks2*Ks2
+    return um+((spotk*spotk-spotl*spotl)*qy-2*spotk*spotl*qx)/Ks4
+
+def vg(spotk,spotl,vm,qx,qy) :
+    Ks2=spotl*spotl+spotk*spotk
+    Ks4=Ks2*Ks2
+    return vm+((spotk*spotk-spotl*spotl)*qx+2*spotk*spotl*qy)/Ks4
+
+def kt(spotk,spotl,umx,vmx,qxy,qxx) :
+    Ks2=spotl*spotl+spotk*spotk
+    return -spotk*umx-spotl*vmx+(qxy*spotk-qxx*spotl)/Ks2
+
+def lt(spotk,spotl,umy,vmy,qxy,qyy) :
+    Ks2=spotl*spotl+spotk*spotk
+    return -spotk*umy-spotl*vmy+(qyy*spotk-qxy*spotl)/Ks2
+
+def rk(x,y,k,l):
+    xt=ug(k,l,umint(x,y),qxint(x,y),qyint(x,y))
+    yt=vg(k,l,vmint(x,y),qxint(x,y),qyint(x,y))
+    dk=kt(k,l,umxint(x,y),vmxint(x,y),qxyint(x,y),qxxint(x,y))
+    dl=lt(k,l,umyint(x,y),vmyint(x,y),qxyint(x,y),qyyint(x,y))
+    return xt,yt,dk,lt
+
+# Runge-Kutta method
+def rk4(f, x0, y0, x1, n):
+    vx = [0] * (n + 1)
+    vy = [0] * (n + 1)
+    h = (x1 - x0) / float(n)
+    vx[0] = x = x0
+    vy[0] = y = y0
+    for i in range(1, n + 1):
+        k1 = h * f(x, y)
+        k2 = h * f(x + 0.5 * h, y + 0.5 * k1)
+        k3 = h * f(x + 0.5 * h, y + 0.5 * k2)
+        k4 = h * f(x + h, y + k3)
+        vx[i] = x = x0 + i * h
+        vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
+    return vx, vy
+
+
 ###==================================================================================
 print "  "
 print "Start ray tracing:"
@@ -389,9 +417,6 @@ for iloc in range(0,Nloc) :
 
                 ## Starting the loop with the above initial k,l, and Ks
 
-                i1=i
-                j1=j
-
 #                for t in range(0,Nsteps) :
                 for t in range(0,1) :
                     #if np.equal(np.remainder(t,40),0) :
@@ -401,6 +426,8 @@ for iloc in range(0,Nloc) :
                     if t==0 :
                         xm1=xm[i]
                         ym1=ym[j]
+                        k1=spotk
+                        l1=spotl
 
                     um1 = umint(xm1,ym1)
                     vm1 = vmint(xm1,ym1)
@@ -417,12 +444,6 @@ for iloc in range(0,Nloc) :
                     qyy1 = qyyint(xm1,ym1)
                     qxy1 = qxyint(xm1,ym1)
 
-                    # Solving for the changes (eq.9 and 10 in Karoly 1983)
-                    ug=um1+((spotk*spotk-spotl*spotl)*qy1-2*spotk*spotl*qx1)/np.power(Ks,4)
-                    vg=vm1+((spotk*spotk-spotl*spotl)*qx1+2*spotk*spotl*qy1)/np.power(Ks,4)
-
-                    kt=-spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
-                    lt=-spotk*umy1-spotl*vmy1+(qyy1*spotk-qxy1*spotl)/np.square(Ks)
 
                     print 'um1=',um1
                     print 'vm1=',vm1
@@ -448,61 +469,76 @@ for iloc in range(0,Nloc) :
 
                     #Appliing changes
 
-                    print 'new spotk=', spotk+kt*dt
+                    # print 'ug=',ug(spotk,spotl,um1,qx1,qy1)
+                    # print 'vg=',vg(spotk,spotl,vm1,qx1,qy1)
+                    #
+                    # print 'kt=',kt(spotk,spotl,umx1,vmx1,qxy1,qxx1)
+                    # print 'lt=',lt(spotk,spotl,umy1,vmy1,qxy1,qyy1)
 
-                    ug1=um1+((spotk*spotk-spotl*spotl)*qy1-2*spotk*spotl*qx1)/np.power(Ks,4)
-                    vg1=vm1+((spotk*spotk-spotl*spotl)*qx1+2*spotk*spotl*qy1)/np.power(Ks,4)
+                    # # Runge-Kutta method
+                    # RK step 1
+                    # um1 = umint(xm1,ym1)
+                    # vm1 = vmint(xm1,ym1)
+                    #
+                    # umx1 = umxint(xm1,ym1)
+                    # umy1 = umyint(xm1,ym1)
+                    # vmx1 = vmxint(xm1,ym1)
+                    # vmy1 = vmyint(xm1,ym1)
+                    #
+                    # qx1 = qxint(xm1,ym1)
+                    # qy1 = qyint(xm1,ym1)
+                    #
+                    # qxx1 = qxxint(xm1,ym1)
+                    # qyy1 = qyyint(xm1,ym1)
+                    # qxy1 = qxyint(xm1,ym1)
+                    #
+                    # xt1=ug(spotk,spotl,um1,qx1,qy1)
+                    # yt1=vg(spotk,spotl,vm1,qx1,qy1)
+                    # dk1=kt(spotk,spotl,umx1,vmx1,qxy1,qxx1)
+                    # dl1=lt(spotk,spotl,umy1,vmy1,qxy1,qyy1)
 
-                    kt1=-spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
-                    lt1=-spotk*umy1-spotl*vmy1+(qyy1*spotk-qxy1*spotl)/np.square(Ks)
+                    xt1, yt1, dk1, dl1 = rk(xm1,ym1,k1,l1)
 
-                    dk = 0.5*kt1*dt
-                    dk2 = -spotk*umx1-spotl*vmx1+(qxy1*spotk-qxx1*spotl)/np.square(Ks)
+                    # RK step 2
+                    xm2 = xm1+0.5*xt1*dt
+                    ym2 = ym1+0.5*yt1*dt
+                    k2=k1+0.5*kt1*dt
+                    l2=l1+0.5*lt1*dt
 
-        #   % RK step 1
-        #   [dxdt1,dydt1,dkdt1,dldt1] = rkstep(xm,ym,rdatam,x,y,k,l,theory);
-        #   dx=0.5*dxdt1*dt;
-        #   dy=0.5*dydt1*dt;
-        #   dk=0.5*dkdt1*dt;
-        #   dl=0.5*dldt1*dt;
-        #   if isempty(dx+dy+dk+dl);break;end
-        #
-        #   % RK step 2
-        #   [dxdt2,dydt2,dkdt2,dldt2] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
-        #   dx=0.5*dxdt2*dt;
-        #   dy=0.5*dydt2*dt;
-        #   dk=0.5*dkdt2*dt;
-        #   dl=0.5*dldt2*dt;
-        #   if isempty(dx+dy+dk+dl);break;end
-        #
-        #   % RK step 3
-        #   [dxdt3,dydt3,dkdt3,dldt3] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
-        #   dx=0.5*dxdt3*dt;
-        #   dy=0.5*dydt3*dt;
-        #   dk=0.5*dkdt3*dt;
-        #   dl=0.5*dldt3*dt;
-        #   if isempty(dx+dy+dk+dl);break;end
-        #
-        #   % RK step 4
-        #   [dxdt4,dydt4,dkdt4,dldt4] = rkstep(xm,ym,rdatam,x+dx,y+dy,k+dk,l+dl,theory);
-        #   dx=dt*(dxdt1+2*dxdt2+2*dxdt3+dxdt4)/6;
-        #   dy=dt*(dydt1+2*dydt2+2*dydt3+dydt4)/6;
-        #   dk=dt*(dkdt1+2*dkdt2+2*dkdt3+dkdt4)/6;
-        #   dl=dt*(dldt1+2*dldt2+2*dldt3+dldt4)/6;
-        #
-        #   if isempty(dx+dy+dk+dl);break;end
-        #
-        #   xrp(it)=x+dx;
-        #   krp(it)=k+dk;
-        #
-        #   lrp(it)=l+dl;
-        #   yrp(it)=y+dy;
+                    xt2, yt2,dk2, dl2 = rk(xm2,ym2,k2,l2)
+
+                    # RK step 3
+                    xm3 = xm1+0.5*xt2*dt
+                    ym3 = ym1+0.5*yt2*dt
+                    k3=k1+0.5*kt2*dt
+                    l3=l1+0.5*lt2*dt
+
+                    xt3, yt3,dk3, dl3 = rk(xm3,ym3,k3,l3)
+
+                    # RK step 4
+                    xm4 = xm1+xt2*dt
+                    ym4 = ym1+yt2*dt
+                    k4=k1+kt3*dt
+                    k4=l1+lt3*dt
+
+                    xt4, yt4,dk4, dl4 = rk(xm4,ym4,k4,l4)
+
+                    dx4=dt*(xt1+2*xt2+2*xt3+xt4)/6;
+                    dy4=dt*(yt1+2*yt2+2*yt3+yt4)/6;
+                    dk4=dt*(kt1+2*kt2+2*kt3+kt4)/6;
+                    dl4=dt*(lt1+2*lt2+2*lt3+lt4)/6;
+
+                    xm1 = xm1+dx4
+                    ym1 = ym1+dy4
+                    k1 = k1+dk4
+                    l1 = k1+dl4
+
+                    Ks =np.sqrt(k1*k1+l1*l1)
 
 
 
 
 
-                    vx, vy = rk4(f, 0, 1, 10, 100)
 
 
               #
