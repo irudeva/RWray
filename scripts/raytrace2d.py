@@ -337,7 +337,7 @@ def rk(x,y,k,l):
     yt=vg(k,l,vmint(x,y),qxint(x,y),qyint(x,y))
     dk=kt(k,l,umxint(x,y),vmxint(x,y),qxyint(x,y),qxxint(x,y))
     dl=lt(k,l,umyint(x,y),vmyint(x,y),qxyint(x,y),qyyint(x,y))
-    return xt,yt,dk,lt
+    return xt,yt,dk,dl
 
 # Runge-Kutta method
 def rk4(f, x0, y0, x1, n):
@@ -429,83 +429,18 @@ for iloc in range(0,Nloc) :
                         k1=spotk
                         l1=spotl
 
-                    um1 = umint(xm1,ym1)
-                    vm1 = vmint(xm1,ym1)
-
-                    umx1 = umxint(xm1,ym1)
-                    umy1 = umyint(xm1,ym1)
-                    vmx1 = vmxint(xm1,ym1)
-                    vmy1 = vmyint(xm1,ym1)
-
-                    qx1 = qxint(xm1,ym1)
-                    qy1 = qyint(xm1,ym1)
-
-                    qxx1 = qxxint(xm1,ym1)
-                    qyy1 = qyyint(xm1,ym1)
-                    qxy1 = qxyint(xm1,ym1)
-
-
-                    print 'um1=',um1
-                    print 'vm1=',vm1
-                    print ' '
-                    print 'umx1=',umx1
-                    print 'umy1=',umy1
-                    print 'vmx1=',vmx1 #so-so
-                    print 'vmy1=',vmy1
-                    print ' '
-                    print 'qx1=',qx1
-                    print 'qy1=',qy1  #sing is different!
-                    print ' '
-                    print 'qxx1=',qxx1
-                    print 'qyy1=',qyy1
-                    print 'qxy1=',qxy1 #sign is diff!
-
-                    print 'dxdt=',ug
-                    print 'dydt=',vg
-
-
-                    print kt  # 4 times large here
-                    print lt
-
-                    #Appliing changes
-
-                    # print 'ug=',ug(spotk,spotl,um1,qx1,qy1)
-                    # print 'vg=',vg(spotk,spotl,vm1,qx1,qy1)
-                    #
-                    # print 'kt=',kt(spotk,spotl,umx1,vmx1,qxy1,qxx1)
-                    # print 'lt=',lt(spotk,spotl,umy1,vmy1,qxy1,qyy1)
-
                     # # Runge-Kutta method
-                    # RK step 1
-                    # um1 = umint(xm1,ym1)
-                    # vm1 = vmint(xm1,ym1)
-                    #
-                    # umx1 = umxint(xm1,ym1)
-                    # umy1 = umyint(xm1,ym1)
-                    # vmx1 = vmxint(xm1,ym1)
-                    # vmy1 = vmyint(xm1,ym1)
-                    #
-                    # qx1 = qxint(xm1,ym1)
-                    # qy1 = qyint(xm1,ym1)
-                    #
-                    # qxx1 = qxxint(xm1,ym1)
-                    # qyy1 = qyyint(xm1,ym1)
-                    # qxy1 = qxyint(xm1,ym1)
-                    #
-                    # xt1=ug(spotk,spotl,um1,qx1,qy1)
-                    # yt1=vg(spotk,spotl,vm1,qx1,qy1)
-                    # dk1=kt(spotk,spotl,umx1,vmx1,qxy1,qxx1)
-                    # dl1=lt(spotk,spotl,umy1,vmy1,qxy1,qyy1)
 
-                    xt1, yt1, dk1, dl1 = rk(xm1,ym1,k1,l1)
+                    # RK step 1
+                    xt1, yt1, kt1, lt1 = rk(xm1,ym1,k1,l1)
 
                     # RK step 2
                     xm2 = xm1+0.5*xt1*dt
                     ym2 = ym1+0.5*yt1*dt
                     k2=k1+0.5*kt1*dt
-                    l2=l1+0.5*lt1*dt
+                    l2=l1+0.5*kt1*dt
 
-                    xt2, yt2,dk2, dl2 = rk(xm2,ym2,k2,l2)
+                    xt2, yt2,kt2, lt2 = rk(xm2,ym2,k2,l2)
 
                     # RK step 3
                     xm3 = xm1+0.5*xt2*dt
@@ -513,25 +448,33 @@ for iloc in range(0,Nloc) :
                     k3=k1+0.5*kt2*dt
                     l3=l1+0.5*lt2*dt
 
-                    xt3, yt3,dk3, dl3 = rk(xm3,ym3,k3,l3)
+                    xt3, yt3,kt3, lt3 = rk(xm3,ym3,k3,l3)
 
                     # RK step 4
                     xm4 = xm1+xt2*dt
                     ym4 = ym1+yt2*dt
                     k4=k1+kt3*dt
-                    k4=l1+lt3*dt
+                    l4=l1+lt3*dt
 
-                    xt4, yt4,dk4, dl4 = rk(xm4,ym4,k4,l4)
+                    xt4, yt4,kt4, lt4 = rk(xm4,ym4,k4,l4)
 
-                    dx4=dt*(xt1+2*xt2+2*xt3+xt4)/6;
-                    dy4=dt*(yt1+2*yt2+2*yt3+yt4)/6;
-                    dk4=dt*(kt1+2*kt2+2*kt3+kt4)/6;
-                    dl4=dt*(lt1+2*lt2+2*lt3+lt4)/6;
+                    dx=dt*(xt1+2*xt2+2*xt3+xt4)/6;
+                    dy=dt*(yt1+2*yt2+2*yt3+yt4)/6;
+                    dk=dt*(kt1+2*kt2+2*kt3+kt4)/6;
+                    dl=dt*(lt1+2*lt2+2*lt3+lt4)/6;
 
-                    xm1 = xm1+dx4
-                    ym1 = ym1+dy4
-                    k1 = k1+dk4
-                    l1 = k1+dl4
+                    print 'kt1=',kt1
+                    print 'kt2=',kt2
+                    print 'kt3=',kt3
+                    print 'kt4=',kt4
+                    print 'dk=',dk
+
+
+
+                    xm1 = xm1+dx
+                    ym1 = ym1+dy
+                    k1 = k1+dk
+                    l1 = k1+dl
 
                     Ks =np.sqrt(k1*k1+l1*l1)
 
