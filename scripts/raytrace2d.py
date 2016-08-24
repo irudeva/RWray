@@ -141,8 +141,8 @@ ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
 ym[0]=float('inf')
 ym[-1]=ym[0]
 
-dy = np.gradient(ym)
-dx = np.gradient(xm)
+# dy = np.gradient(ym)
+# dx = np.gradient(xm)
 
 coslat=np.cos(dtr*lats)
 #coslat[0]=0   # a very small number is used instead
@@ -335,9 +335,9 @@ def lt(spotk,spotl,umy,vmy,qxy,qyy) :
 def rk(x,y,k,l):
     xt=ug(k,l,umint(x,y),qxint(x,y),qyint(x,y))
     yt=vg(k,l,vmint(x,y),qxint(x,y),qyint(x,y))
-    dk=kt(k,l,umxint(x,y),vmxint(x,y),qxyint(x,y),qxxint(x,y))
-    dl=lt(k,l,umyint(x,y),vmyint(x,y),qxyint(x,y),qyyint(x,y))
-    return xt,yt,dk,dl
+    dkdt=kt(k,l,umxint(x,y),vmxint(x,y),qxyint(x,y),qxxint(x,y))
+    dldt=lt(k,l,umyint(x,y),vmyint(x,y),qxyint(x,y),qyyint(x,y))
+    return xt,yt,dkdt,dldt
 
 # Runge-Kutta method
 def rk4(f, x0, y0, x1, n):
@@ -424,59 +424,91 @@ for iloc in range(0,Nloc) :
                     print "    t = ", t
 
                     if t==0 :
-                        xm1=xm[i]
-                        ym1=ym[j]
-                        k1=spotk
-                        l1=spotl
+                        x0=xm[i]
+                        y0=ym[j]
+                        k0=spotk
+                        l0=spotl
+                    else :
+                        x0=xn
+                        y0=yn
+                        k0=kn
+                        l0=ln
 
                     # # Runge-Kutta method
 
                     # RK step 1
-                    xt1, yt1, kt1, lt1 = rk(xm1,ym1,k1,l1)
+                    kx0, ky0, kk0, kl0 = rk(x0,y0,k0,l0)
 
                     # RK step 2
-                    xm2 = xm1+0.5*xt1*dt
-                    ym2 = ym1+0.5*yt1*dt
-                    k2=k1+0.5*kt1*dt
-                    l2=l1+0.5*kt1*dt
+                    x1 = x0+0.5*kx0*dt
+                    y1 = y0+0.5*ky0*dt
+                    k1=k0+0.5*kk0*dt
+                    l1=l0+0.5*kl0*dt
 
-                    xt2, yt2,kt2, lt2 = rk(xm2,ym2,k2,l2)
+                    kx1, ky1, kk1, kl1 = rk(x1,y1,k1,l1)
 
                     # RK step 3
-                    xm3 = xm1+0.5*xt2*dt
-                    ym3 = ym1+0.5*yt2*dt
-                    k3=k1+0.5*kt2*dt
-                    l3=l1+0.5*lt2*dt
+                    x2 = x0+0.5*kx1*dt
+                    y2 = y0+0.5*ky1*dt
+                    k2=k0+0.5*kk1*dt
+                    l2=l0+0.5*kl1*dt
 
-                    xt3, yt3,kt3, lt3 = rk(xm3,ym3,k3,l3)
+                    kx2, ky2, kk2, kl2 = rk(x2,y2,k2,l2)
 
                     # RK step 4
-                    xm4 = xm1+xt2*dt
-                    ym4 = ym1+yt2*dt
-                    k4=k1+kt3*dt
-                    l4=l1+lt3*dt
+                    x3 = x0+kx2*dt
+                    y3 = y0+ky2*dt
+                    k3=k0+kk2*dt
+                    l3=l0+kl2*dt
 
-                    xt4, yt4,kt4, lt4 = rk(xm4,ym4,k4,l4)
+                    kx3, ky3, kk3, kl3= rk(x3,y3,k3,l3)
 
-                    dx=dt*(xt1+2*xt2+2*xt3+xt4)/6;
-                    dy=dt*(yt1+2*yt2+2*yt3+yt4)/6;
-                    dk=dt*(kt1+2*kt2+2*kt3+kt4)/6;
-                    dl=dt*(lt1+2*lt2+2*lt3+lt4)/6;
+                    #RK4 results
+                    dx=dt*(kx0+2*kx1+2*kx2+kx3)/6;
+                    dy=dt*(ky0+2*ky1+2*ky2+ky3)/6;
+                    dk=dt*(kk0+2*kk1+2*kk2+kk3)/6;
+                    dl=dt*(kl0+2*kl1+2*kl2+kl3)/6;
 
-                    print 'kt1=',kt1
-                    print 'kt2=',kt2
-                    print 'kt3=',kt3
-                    print 'kt4=',kt4
-                    print 'dk=',dk
+                    # print ' '
+                    # print 'x0=',x0, ' kx0=', kx0
+                    # print 'x1=',x1, ' kx1=', kx1
+                    # print 'x2=',x2, ' kx2=', kx2
+                    # print 'x3=',x3, ' kx0=', kx0
+                    # print 'dx=',dx/dt
+                    #
+                    # print ' '
+                    # print 'y0=',y0, ' ky0=', ky0
+                    # print 'y1=',y1, ' ky1=', ky1
+                    # print 'y2=',y2, ' ky2=', ky2
+                    # print 'y3=',y3, ' ky0=', ky0
+                    # print 'dy=',dy/dt
+                    #
+                    # print ' '
+                    # print 'k0=',k0, ' kk0=', kk0
+                    # print 'k1=',k1, ' kk1=', kk1
+                    # print 'k2=',k2, ' kk2=', kk2
+                    # print 'k3=',k3, ' kk0=', kk0
+                    # print 'dk=',dk/dt
+                    #
+                    # print ' '
+                    # print 'l0=',l0, ' kl0=', kl0
+                    # print 'l1=',l1, ' kl1=', kl1
+                    # print 'l2=',l2, ' kl2=', kl2
+                    # print 'l3=',l3, ' kl0=', kl0
+                    # print 'dl=',dl/dt
 
+                    xn = x0+dx
+                    yn = y0+dy
+                    kn = k0+dk
+                    ln = l0+dl
 
+                    # print ' '
+                    # print 'x0+dx=',x0,'+',dx,'=',xn
+                    # print 'y0+dy=',y0,'+',dy,'=',yn
+                    # print 'k0+dk=',k0,'+',dk,'=',kn
+                    # print 'l0+dl=',l0,'+',dl,'=',ln
 
-                    xm1 = xm1+dx
-                    ym1 = ym1+dy
-                    k1 = k1+dk
-                    l1 = k1+dl
-
-                    Ks =np.sqrt(k1*k1+l1*l1)
+                    # Ks =np.sqrt(kn*kn+ln*ln)
 
 
 
