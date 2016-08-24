@@ -548,7 +548,8 @@ for ilocation=1:Nlocations
         %%%%%%%%%%%
         %%  Starting the loop with the above initial k,l, and Ks
 
-        for t=1:Nsteps
+%        for t=1:Nsteps
+        for t=1:24
           if rem(t,40)==0
             fprintf(1,'t = %g\n',t);
           end

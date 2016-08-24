@@ -135,6 +135,7 @@ psi = np.average(sf[nt[nt>0],:,:],axis=0)
 # Convert to Mercator projection
 
 xm=lons*radius*dtr
+xm360=360*radius*dtr
 ym=lats+1  #array declaration
 #ym[1:-2] = lats[1:-2]
 ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
@@ -355,6 +356,15 @@ def rk4(f, x0, y0, x1, n):
         vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
     return vx, vy
 
+# Mercator to lonlat
+
+def y2lat(a):
+    return rtd*(2.0*np.arctan(np.exp(a/radius))-pi/2.0)
+
+def lat2y(a) :
+#lat in deg!!!
+    return radius * np.log(np.tan(pi/4.0 + a * dtr/2.0))
+
 
 ###==================================================================================
 print "  "
@@ -417,22 +427,33 @@ for iloc in range(0,Nloc) :
 
                 ## Starting the loop with the above initial k,l, and Ks
 
+                lonn = np.zeros(Nsteps)
+                latn = np.zeros(Nsteps)
+                xn = np.zeros(Nsteps)
+                yn = np.zeros(Nsteps)
+                kn = np.zeros(Nsteps)
+                ln = np.zeros(Nsteps)
+
 #                for t in range(0,Nsteps) :
-                for t in range(0,1) :
-                    #if np.equal(np.remainder(t,40),0) :
-                    #    print "    t = ", t
-                    print "    t = ", t
+
+
+                for t in range(0,24) :
+                    if np.equal(np.remainder(t,40),0) :
+                       print "    t = ", t
+                    # print "    t = ", t
 
                     if t==0 :
-                        x0=xm[i]
-                        y0=ym[j]
-                        k0=spotk
-                        l0=spotl
+                        x0=xn[0]=xm[i]
+                        y0=yn[0]=ym[j]
+                        k0=kn[0]=spotk
+                        l0=ln[0]=spotl
+                        lonn[0]=lon0[iloc]
+                        latn[0]=lat0[iloc]
                     else :
-                        x0=xn
-                        y0=yn
-                        k0=kn
-                        l0=ln
+                        x0=xn[t-1]
+                        y0=yn[t-1]
+                        k0=kn[t-1]
+                        l0=ln[t-1]
 
                     # # Runge-Kutta method
 
@@ -497,10 +518,13 @@ for iloc in range(0,Nloc) :
                     # print 'l3=',l3, ' kl0=', kl0
                     # print 'dl=',dl/dt
 
-                    xn = x0+dx
-                    yn = y0+dy
-                    kn = k0+dk
-                    ln = l0+dl
+                    tn=t+1
+                    xn[tn] = x0+dx
+                    if xn[tn]>=xm360 :
+                     xn[tn]=xn[tn]-xm360;
+                    yn[tn] = y0+dy
+                    kn[tn] = k0+dk
+                    ln[tn] = l0+dl
 
                     # print ' '
                     # print 'x0+dx=',x0,'+',dx,'=',xn
@@ -510,42 +534,22 @@ for iloc in range(0,Nloc) :
 
                     # Ks =np.sqrt(kn*kn+ln*ln)
 
+                    ## Finding the location
+
+                    lonn[tn] = xn[tn]*rtd/radius
+                    latn[tn] = y2lat(yn[tn])
+
+                    print lonn[tn], latn[tn]
+
+
+                fout = open('myfile','w')
+                for t in range(0,25) :
+                    fout.write("%f6.2 %f6.2 %f6.2 %f6.2" % (xn[t],yn[t],kn[t]/(radius*np.cos(yn[t]*dtr)),ln[t]/(radius*np.cos(yn[t]*dtr))))
+                fout.close()
 
 
 
 
-
-
-              #
-            #   xi=xi+real(dxdt)*dt;
-            #   if xi>=max(max(subxx))
-            #     xi=xi-max(max(subxx));
-            #   end
-            #   yi=yi+real(dydt)*dt;
-            #   spotl=spotl+dldt*dt;
-            #   spotk=spotk+dkdt*dt;
-            #   Ks=(spotk^2+spotl^2)^0.5;
-              #
-            #   %%%%%%%%%%%%%%%
-            #   %%  Finding the location
-              #
-            #   if use_interp2==0
-            #     Yint=griddata(subyy,subxx,YY,yi,xi,'spline');
-            #     Xint=griddata(subyy,subxx,XX,yi,xi,'spline');
-            #   else
-            #     Yint=interp2(subyy_interp2,subxx_interp2,YY',yi,xi,'spline');
-            #     Xint=interp2(subyy_interp2,subxx_interp2,XX',yi,xi,'spline');
-            #   end
-              #
-            #   %% make sure ray does not leave the domain where
-            #   %% background fields are given:
-            #   if Yint<y(jmax) || Yint>y(jmin)
-            #     fprintf(1,'*** Yint>Ymax, breaking.  (Xint,Yint)=(%g,%g)\n'...
-            #             ,Xint,Yint);
-            #     break
-            #   end
-              #
-            #
 
 
                 print "All good to here"
