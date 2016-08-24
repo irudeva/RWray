@@ -450,10 +450,10 @@ for iloc in range(0,Nloc) :
                         lonn[0]=lon0[iloc]
                         latn[0]=lat0[iloc]
                     else :
-                        x0=xn[t-1]
-                        y0=yn[t-1]
-                        k0=kn[t-1]
-                        l0=ln[t-1]
+                        x0=xn[t]
+                        y0=yn[t]
+                        k0=kn[t]
+                        l0=ln[t]
 
                     # # Runge-Kutta method
 
@@ -544,7 +544,7 @@ for iloc in range(0,Nloc) :
 
                 fout = open('myfile','w')
                 for t in range(0,25) :
-                    fout.write("%f6.2 %f6.2 %f6.2 %f6.2" % (xn[t],yn[t],kn[t]/(radius*np.cos(yn[t]*dtr)),ln[t]/(radius*np.cos(yn[t]*dtr))))
+                    fout.write("%6.2f   %6.2f   %12.10f   %12.10f \n" % (lonn[t],latn[t],kn[t]/(radius*np.cos(yn[t]*dtr)),ln[t]/(radius*np.cos(yn[t]*dtr))))
                 fout.close()
 
 
