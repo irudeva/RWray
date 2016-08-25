@@ -34,8 +34,9 @@ Nsteps = int_time/dt
 
 k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
 
-lon0 = np.array([120])
-lat0 = np.array([50])
+lon0 = np.array([120,0])
+lat0 = np.array([50,30])
+loc = np.array([0,0])  # the range of locations used
 
 #set to 1 to do complex ray tracing
 complex_tracing=False
@@ -47,7 +48,7 @@ print "Periods: "
 print "integration time ", int_time/day, " days"
 print "time step ", dt/mins, " min"
 print "Nsteps = ",Nsteps
-print "Starting points: lon ",lon0,"E lat ",lat0,"N"
+print "Starting points: lon ",lon0[loc[0]:loc[1]+1],"E lat ",lat0[loc[0]:loc[1]+1],"N"
 if complex_tracing is True :
     print "Complex tracing is on"
 elif complex_tracing is False :
@@ -244,7 +245,7 @@ BetaM=tmp[:,None]-cosuyy
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-ncvar = 'vm'
+ncvar = 'u'
 ftest = '../output/test/test.%s.nc' % (ncvar)
 ncout = Dataset(ftest, 'w', format='NETCDF4')
 ncout.description = "TEST %s" % (ftest)
@@ -272,7 +273,7 @@ ncout.variables[dimnam[1]][:] = lats
 
 ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
 #ncout_var.long_name = 'streamfunction'
-var_scale = 1.  #e-12
+var_scale = 1.e+0
 var_add   = 0.
 ncout_var.scale_factor = var_scale
 ncout_var.add_offset   = var_add
@@ -283,7 +284,7 @@ ncout_var.units        = 'not specified'
 
 #print qx.shape
 #print ncout_var.shape
-ncout_var[:] = vm
+ncout_var[:] = u
 
 
 nc.close()
@@ -373,8 +374,8 @@ print "  "
 ##----------------------------------------------------------------------------------
 # Solving for the ray path for different forcing sites (initial locations of rays):
 
-Nloc = lon0.size
-for iloc in range(0,Nloc) :
+#Nloc = lon0.size
+for iloc in range(loc[0],loc[1]+1) :
     print " Location #", iloc
 
     i = np.argmin(np.absolute(lons-lon0[iloc]))
@@ -417,12 +418,12 @@ for iloc in range(0,Nloc) :
 
                 if complex_tracing is False :
                     if np.not_equal(np.imag(spotl),0) :
-                        print "   *** found complex initial l, not tracing. \n"
-                        print " Location #", iloc
-                        print "  Ray tracing: period", 2*pi/(fr*day)
-                        print "  initial k ", k
-                        print "  Root # ", R
-                        quit()
+                        print "   *** found complex initial l, not tracing. "
+                        print "   *** Location #", iloc
+                        print "   *** Ray tracing: period", 2*pi/(fr*day)
+                        print "   *** initial k ", k
+                        print "   *** Root # \n", R
+                        continue
 
                 ## Starting the loop with the above initial k,l, and Ks
 
@@ -437,7 +438,7 @@ for iloc in range(0,Nloc) :
                 #for t in range(0,24) :
                     if np.equal(np.remainder(t,40),0) :
                        print "    t = ", t
-                       print '    spotl imaginary part: {}'.format(np.imag(spotl))
+                       #print '    spotl imaginary part: {}'.format(np.imag(spotl))
                     # print "    t = ", t
 
                     if t==0 :
@@ -521,7 +522,9 @@ for iloc in range(0,Nloc) :
                     if xn[tn]>=xm360 :
                      xn[tn]=xn[tn]-xm360;
                     yn[tn] = y0+dy
-                    print "t=",t,"  v=",vmint(xn[tn],yn[tn])
+                    # print "t=",t,"  v=",vmint(xn[tn],yn[tn]),"  u=",umint(xn[tn],yn[tn])
+
+
                     kn[tn] = k0+dk
                     ln[tn] = l0+dl
 
@@ -538,13 +541,18 @@ for iloc in range(0,Nloc) :
                     lonn[tn] = xn[tn]*rtd/radius
                     latn[tn] = y2lat(yn[tn])
 
+                    ##Testing
+                    # it = np.argmin(np.absolute(lons-lonn[tn]))
+                    # jt = np.argmin(np.absolute(lats-latn[tn]))
+                    # print "  vgrd=",vm[jt,it],"  ugrd=",um[jt,it]
+
                     #print t, lonn[tn], latn[tn]
 
 
                 if fr==0 :
                     fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
                 else :
-                    fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{:d}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day),k,R),'w')
+                    fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day),k,R),'w')
                 for t in range(0,Nsteps+1,24) :
                     fout.write('{:3d} {:3d} {:6.2f}   {:6.2f}   {:0.2f}   {:0.2f} \n'.format(t,t/24,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),ln[t]*radius*np.cos(latn[t]*dtr)))
                 fout.close()
@@ -555,4 +563,4 @@ for iloc in range(0,Nloc) :
 
 
                 print "All good to here"
-                quit()
+                #quit()

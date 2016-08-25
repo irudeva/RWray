@@ -13,10 +13,10 @@ lon = (/"120","0"/)
 lat = (/"50","30"/)
 print(lon+" "+lat)
   do loc  = 1,1
-   do root = 0,0
+   do root = 0,2
     ;period = (/"-60","60","-30","30","Inf"/)
-    ;period = (/"_inf","50","20"/)
-    period = (/"_inf"/)
+    period = (/"_inf","50","20"/)
+    ;period = (/"_inf"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
      fout = "../output/test/ray_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
@@ -69,7 +69,8 @@ print(lon+" "+lat)
   ytxt = yleg
 ; *** Map plotted ******************************************************************
 
-     do k    = 1,1
+     do k    = 1,6
+     print("k="+k)
 
       fin = "../output/test/raypath_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
       if (fileexists(fin)) then

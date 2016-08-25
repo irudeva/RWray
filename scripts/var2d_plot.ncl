@@ -2,14 +2,14 @@ begin
 ;************************************************
 ; read in netCDF file
 ;************************************************
- var = "v"
-  a = addfile("../output/test/test."+var+".nc","r")
+ nvar = "u"
+  a = addfile("../output/test/test."+nvar+".nc","r")
 ;************************************************
-  v = a->v
+  var = a->u
 ;************************************************
 ; create default plot
 ;************************************************
-  wks = gsn_open_wks("png","../output/test/test."+var)                  ; send graphics to PNG file
+  wks = gsn_open_wks("png","../output/test/test."+nvar)                  ; send graphics to PNG file
 
   res = True
   res@mpMinLatF            = -90      ; range to zoom in on
@@ -18,13 +18,12 @@ begin
   res@mpMaxLonF            = 360.
 
   ;res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
-  ;res@cnMinLevelValF  = -500.			; set the minimum contour level
-  ;res@cnMaxLevelValF  = 500.			; set the maximum contour level
-  ;res@cnLevelSpacingF = 10.			; set the interval between contours
+  ;res@cnMinLevelValF  = -20.			; set the minimum contour level
+  ;res@cnMaxLevelValF  = 20.			; set the maximum contour level
+  ;res@cnLevelSpacingF = 2.			; set the interval between contours
 
-  ; print(qx)
+  printVarSummary(var)
 
 
-
-  plot = gsn_csm_contour_map(wks,v,res)         ; create a default plot
+  plot = gsn_csm_contour_map(wks,var(1:240,:),res)         ; create a default plot
 end
