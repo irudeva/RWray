@@ -12,7 +12,7 @@ dum2 = dum1
 lon = (/"120","0"/)
 lat = (/"50","30"/)
 print(lon+" "+lat)
-  do loc  = 1,1
+  do loc  = 0,0
    do root = 0,2
     ;period = (/"-60","60","-30","30","Inf"/)
     period = (/"_inf","50","20"/)
