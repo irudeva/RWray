@@ -34,8 +34,8 @@ Nsteps = int_time/dt
 
 k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
 
-lon0 = np.array([0])
-lat0 = np.array([30])
+lon0 = np.array([120])
+lat0 = np.array([50])
 
 #set to 1 to do complex ray tracing
 complex_tracing=False
@@ -244,7 +244,7 @@ BetaM=tmp[:,None]-cosuyy
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-ncvar = 'qx'
+ncvar = 'vm'
 ftest = '../output/test/test.%s.nc' % (ncvar)
 ncout = Dataset(ftest, 'w', format='NETCDF4')
 ncout.description = "TEST %s" % (ftest)
@@ -272,7 +272,7 @@ ncout.variables[dimnam[1]][:] = lats
 
 ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
 #ncout_var.long_name = 'streamfunction'
-var_scale = 1.e-12
+var_scale = 1.  #e-12
 var_add   = 0.
 ncout_var.scale_factor = var_scale
 ncout_var.add_offset   = var_add
@@ -283,7 +283,7 @@ ncout_var.units        = 'not specified'
 
 #print qx.shape
 #print ncout_var.shape
-ncout_var[:] = qx
+ncout_var[:] = vm
 
 
 nc.close()
@@ -315,23 +315,23 @@ qxyint = interpolate.interp2d(xm, ym[1:-1], qxy[1:-1,:], kind='cubic')
 
 ##---Derivatives(eq.9 and 10 in Karoly 1983)---------------------------------------
 
-def ug(spotk,spotl,um,qx,qy) :
-    Ks2=spotl*spotl+spotk*spotk
+def ug(k,l,um,qx,qy) :
+    Ks2=l*l+k*k
     Ks4=Ks2*Ks2
-    return um+((spotk*spotk-spotl*spotl)*qy-2*spotk*spotl*qx)/Ks4
+    return um+((k*k-l*l)*qy-2*k*l*qx)/Ks4
 
-def vg(spotk,spotl,vm,qx,qy) :
-    Ks2=spotl*spotl+spotk*spotk
+def vg(k,l,vm,qx,qy) :
+    Ks2=l*l+k*k
     Ks4=Ks2*Ks2
-    return vm+((spotk*spotk-spotl*spotl)*qx+2*spotk*spotl*qy)/Ks4
+    return vm+((k*k-l*l)*qx+2*k*l*qy)/Ks4
 
-def kt(spotk,spotl,umx,vmx,qxy,qxx) :
-    Ks2=spotl*spotl+spotk*spotk
-    return -spotk*umx-spotl*vmx+(qxy*spotk-qxx*spotl)/Ks2
+def kt(k,l,umx,vmx,qxy,qxx) :
+    Ks2=l*l+k*k
+    return -k*umx-l*vmx+(qxy*k-qxx*l)/Ks2
 
-def lt(spotk,spotl,umy,vmy,qxy,qyy) :
-    Ks2=spotl*spotl+spotk*spotk
-    return -spotk*umy-spotl*vmy+(qyy*spotk-qxy*spotl)/Ks2
+def lt(k,l,umy,vmy,qxy,qyy) :
+    Ks2=l*l+k*k
+    return -k*umy-l*vmy+(qyy*k-qxy*l)/Ks2
 
 def rk(x,y,k,l):
     xt=ug(k,l,umint(x,y),qxint(x,y),qyint(x,y))
@@ -412,7 +412,6 @@ for iloc in range(0,Nloc) :
             for R in range(0,3) :
                 spotl=lroot[R]
                 print "  Root # ", R, "  spotl = ", spotl
-                spotl=lroot[R]
                 spotk = k/(radius*coslat[j]) #refresh!!!
                 Ks=np.sqrt(spotl*spotl+spotk*spotk)
 
@@ -427,26 +426,25 @@ for iloc in range(0,Nloc) :
 
                 ## Starting the loop with the above initial k,l, and Ks
 
-                lonn = np.zeros(Nsteps)
-                latn = np.zeros(Nsteps)
-                xn = np.zeros(Nsteps)
-                yn = np.zeros(Nsteps)
-                kn = np.zeros(Nsteps)
-                ln = np.zeros(Nsteps)
+                lonn = np.zeros(Nsteps+1)
+                latn = np.zeros(Nsteps+1)
+                xn = np.zeros(Nsteps+1)
+                yn = np.zeros(Nsteps+1)
+                kn = np.zeros(Nsteps+1)
+                ln = np.zeros(Nsteps+1)
 
-#                for t in range(0,Nsteps) :
-
-
-                for t in range(0,24) :
+                for t in range(0,Nsteps) :
+                #for t in range(0,24) :
                     if np.equal(np.remainder(t,40),0) :
                        print "    t = ", t
+                       print '    spotl imaginary part: {}'.format(np.imag(spotl))
                     # print "    t = ", t
 
                     if t==0 :
                         x0=xn[0]=xm[i]
                         y0=yn[0]=ym[j]
                         k0=kn[0]=spotk
-                        l0=ln[0]=spotl
+                        l0=ln[0]=np.real(spotl)
                         lonn[0]=lon0[iloc]
                         latn[0]=lat0[iloc]
                     else :
@@ -523,6 +521,7 @@ for iloc in range(0,Nloc) :
                     if xn[tn]>=xm360 :
                      xn[tn]=xn[tn]-xm360;
                     yn[tn] = y0+dy
+                    print "t=",t,"  v=",vmint(xn[tn],yn[tn])
                     kn[tn] = k0+dk
                     ln[tn] = l0+dl
 
@@ -539,12 +538,15 @@ for iloc in range(0,Nloc) :
                     lonn[tn] = xn[tn]*rtd/radius
                     latn[tn] = y2lat(yn[tn])
 
-                    print lonn[tn], latn[tn]
+                    #print t, lonn[tn], latn[tn]
 
 
-                fout = open('myfile','w')
-                for t in range(0,25) :
-                    fout.write("%6.2f   %6.2f   %12.10f   %12.10f \n" % (lonn[t],latn[t],kn[t]/(radius*np.cos(yn[t]*dtr)),ln[t]/(radius*np.cos(yn[t]*dtr))))
+                if fr==0 :
+                    fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
+                else :
+                    fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{:d}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day),k,R),'w')
+                for t in range(0,Nsteps+1,24) :
+                    fout.write('{:3d} {:3d} {:6.2f}   {:6.2f}   {:0.2f}   {:0.2f} \n'.format(t,t/24,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),ln[t]*radius*np.cos(latn[t]*dtr)))
                 fout.close()
 
 

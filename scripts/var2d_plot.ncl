@@ -2,10 +2,10 @@ begin
 ;************************************************
 ; read in netCDF file
 ;************************************************
- var = "qx"
+ var = "v"
   a = addfile("../output/test/test."+var+".nc","r")
 ;************************************************
-  qx = a->qx
+  v = a->v
 ;************************************************
 ; create default plot
 ;************************************************
@@ -26,5 +26,5 @@ begin
 
 
 
-  plot = gsn_csm_contour_map(wks,qx,res)         ; create a default plot
+  plot = gsn_csm_contour_map(wks,v,res)         ; create a default plot
 end
