@@ -25,6 +25,7 @@ e_omega=7.292e-5 #rotation rate of Earth (rad/s)
 day=24*60*60 #in seconds
 mins = 60
 Periods = np.array([float('inf'), 50, 20 ])*day
+# Periods = np.array([float('inf')])*day
 
 freq = 2*pi/Periods
 nfreq=freq.size
@@ -33,10 +34,11 @@ int_time=10*day   #integration time
 Nsteps = int_time/dt
 
 k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
+#k_wavenumbers=np.array([1]) #  initial k wave number:
 
 lon0 = np.array([120,0])
 lat0 = np.array([50,30])
-loc = np.array([0,0])  # the range of locations used
+loc = np.array([0,1])  # the range of locations used
 
 #set to 1 to do complex ray tracing
 complex_tracing=False
@@ -245,54 +247,54 @@ BetaM=tmp[:,None]-cosuyy
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-varlist = np.zeros(15, dtype = {'names': ['name', 'outname', 'scale'],
-                                     'formats': ['a5', 'a5', 'f4']} )
-varlist[0] = ("u","u",0)
-varlist[1] = ("v","v",0)
-varlist[2] = ("um","um",0)
-varlist[3] = ("vm","vm",0)
-varlist[4] = ("umx","umx",1.e+5)
-varlist[5] = ("umy","umy",1.e+5)
-varlist[6] = ("vmx","vmx",1.e+5)
-varlist[7] = ("vmy","vmy",1.e+5)
-varlist[8] = ("qbar","q",1.e-4)
-varlist[9] = ("qx","qx",1.e-11)
-varlist[10] = ("qy","qy",1.e-11)
-varlist[11] = ("qxx","qxx",1.e-17)
-varlist[12] = ("qyy","qyy",1.e-17)
-varlist[13] = ("qxy","qxy",1.e-17)
-varlist[14] = ("BetaM","BetaM",1.e-11)
+varlist = np.zeros(15, dtype = {'names': ['name', 'outname', 'data', 'scale'],
+                                'formats': ['a5', 'a5', '(241,480)f4', 'f4']} )
 
-print varlist["outname"]
-# print varlist["scale"][8]
+
+varlist[0] = ("u","u",u,1)
+varlist[1] = ("v","v",v,1)
+varlist[2] = ("um","um",um,1)
+varlist[3] = ("vm","vm",vm,1)
+varlist[4] = ("umx","umx",umx,1.e-6)
+varlist[5] = ("umy","umy",umy,1.e-6)
+varlist[6] = ("vmx","vmx",vmx,1.e-6)
+varlist[7] = ("vmy","vmy",vmy,1.e-6)
+varlist[8] = ("qbar","q",qbar,1.e-4)
+varlist[9] = ("qx","qx",qx,1.e-12)
+varlist[10] = ("qy","qy",qy,1.e-11)
+varlist[11] = ("qxx","qxx",qxx,1.e-18)
+varlist[12] = ("qyy","qyy",qyy,1.e-18)
+varlist[13] = ("qxy","qxy",qxy,1.e-18)
+varlist[14] = ("BetaM","BetaM",BetaM,1.e-11)
+
 
 #Arr= [("u",100),("v",200)]
 #for Key,Value in Arr:
 #    print Key,"=",Value
 
-# print 'u=',u[10,10]
-# print 'v=',v[10,10]
-# print 'um=',um[10,10]
-# print 'vm=',vm[10,10]
-# print 'umx=',umx[10,10]
-# print 'umy=',umy[10,10]
-# print 'vmx=',vmx[10,10]
-# print 'vmy=',vmy[10,10]
-# print 'q=',qbar[10,10]
-# print 'qx=',qx[10,10]
-# print 'qy=',qy[10,10]
-# print 'qxx=',qxx[10,10]
-# print 'qyy=',qyy[10,10]
-# print 'qxy=',qxy[10,10]
-# print 'Beta=',BetaM[10,10]
+print 'u=',u[10,10]
+print 'v=',v[10,10]
+print 'um=',um[10,10]
+print 'vm=',vm[10,10]
+print 'umx=',umx[10,10]
+print 'umy=',umy[10,10]
+print 'vmx=',vmx[10,10]
+print 'vmy=',vmy[10,10]
+print 'q=',qbar[10,10]
+print 'qx=',qx[10,10]
+print 'qy=',qy[10,10]
+print 'qxx=',qxx[10,10]
+print 'qyy=',qyy[10,10]
+print 'qxy=',qxy[10,10]
+print 'Beta=',BetaM[10,10]
 
 
 for iv in range(varlist['name'].size) :
 
 
-    ncvar = varlist["name"][iv]
+    ncvar = varlist["outname"][iv]
     print 'ncvar=',ncvar
-    ftest = '../output/test/test.%s.nc' % (ncvar)
+    ftest = '../output/test/test.%s.nc' % (varlist["outname"][iv])
     ncout = Dataset(ftest, 'w', format='NETCDF4')
     ncout.description = "TEST %s" % (ftest)
 
@@ -319,24 +321,24 @@ for iv in range(varlist['name'].size) :
 
     ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
     #ncout_var.long_name = 'streamfunction'
-    var_scale = varlist["scale"][iv]
-    var_add   = 0.
-    ncout_var.scale_factor = var_scale
-    ncout_var.add_offset   = var_add
+    # var_scale = varlist["scale"][iv]
+    # var_add   = 0.
+    ncout_var.scale_factor = varlist["scale"][iv]
+    ncout_var.add_offset   = 0.
     #!!!automatically takes scale and offset into account
     #!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
     #ncout_var.units        = 'm**2 s**-1'
-    ncout_var.units        = 'not specified'
+    #ncout_var.units        = 'not specified'
+    ncout_var.units        = 'scale   %s' % varlist["scale"][iv]
 
     #print qx.shape
     #print ncout_var.shape
-    ncout_var[:] = varlist["name"][iv]
+    ncout_var[:] = varlist["data"][iv]
 
 
     ncout.close()
 nc.close()
 
-quit()
 ##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"
 
@@ -344,6 +346,9 @@ print "All derivatives done"
 print "  "
 print "Interpolation"
 
+
+uint = interpolate.interp2d(xm, ym[1:-1], u[1:-1,:], kind='cubic')
+vint = interpolate.interp2d(xm, ym[1:-1], v[1:-1,:], kind='cubic')
 
 umint = interpolate.interp2d(xm, ym[1:-1], um[1:-1,:], kind='cubic')
 vmint = interpolate.interp2d(xm, ym[1:-1], vm[1:-1,:], kind='cubic')
@@ -353,6 +358,8 @@ umyint = interpolate.interp2d(xm, ym[1:-1], umy[1:-1,:], kind='cubic')
 vmxint = interpolate.interp2d(xm, ym[1:-1], vmx[1:-1,:], kind='cubic')
 vmyint = interpolate.interp2d(xm, ym[1:-1], vmy[1:-1,:], kind='cubic')
 
+qint = interpolate.interp2d(xm, ym[1:-1], qbar[1:-1,:], kind='cubic')
+
 qxint = interpolate.interp2d(xm, ym[1:-1], qx[1:-1,:], kind='cubic')
 qyint = interpolate.interp2d(xm, ym[1:-1], qy[1:-1,:], kind='cubic')
 
@@ -360,6 +367,8 @@ qxxint = interpolate.interp2d(xm, ym[1:-1], qxx[1:-1,:], kind='cubic')
 qyyint = interpolate.interp2d(xm, ym[1:-1], qyy[1:-1,:], kind='cubic')
 
 qxyint = interpolate.interp2d(xm, ym[1:-1], qxy[1:-1,:], kind='cubic')
+
+BetaMint = interpolate.interp2d(xm, ym[1:-1], BetaM[1:-1,:], kind='cubic')
 
 
 ##---Derivatives(eq.9 and 10 in Karoly 1983)---------------------------------------
@@ -601,8 +610,17 @@ for iloc in range(loc[0],loc[1]+1) :
                     fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
                 else :
                     fout = open('../output/test/raypath_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day),k,R),'w')
-                for t in range(0,Nsteps+1,24) :
-                    fout.write('{:3d} {:3d} {:6.2f}   {:6.2f}   {:0.2f}   {:0.2f} \n'.format(t,t/24,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),ln[t]*radius*np.cos(latn[t]*dtr)))
+                frmt = "{:>3} {:>4}"+" {:>6}"*2+(" {:>6}"+" {:>9}")*2+" {:>9}"+" {:>7}"*4+" {:>9}"*11+" \n"
+                fout.write(frmt.
+                    format('hr','day','lon','lat','k*rad','k','l*rad','l','Ks','u','v','um','vm','umx','vmx','umy','vmy','q','qx','qy','BetaM','qxx','qyy','qxy'))
+                frmt = "{:>3d} {:>4.1f}"+" {:>6.2f}"*2+(" {:>6.2f}"+" {:>9.2e}")*2+" {:>9.2e}"+" {:>7.2f}"*4+" {:>9.2e}"*11+" \n"
+                for t in range(0,Nsteps+1,12) :
+                    x=xn[t]
+                    y=yn[t]
+
+                    fout.write(frmt.format(t,t/24.,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius*np.cos(latn[t]*dtr),kn[t],kn[t]*kn[t]+ln[t]*ln[t],
+                    uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0],
+                    qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]))
                 fout.close()
 
 
