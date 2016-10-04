@@ -376,11 +376,27 @@ BetaMint = interpolate.interp2d(xm, ym[1:-1], BetaM[1:-1,:], kind='cubic')
 def ug(k,l,um,qx,qy) :
     Ks2=l*l+k*k
     Ks4=Ks2*Ks2
+    print 'ug'
+    print 'um=', um
+    print "(k2-l2)*qy",(k*k-l*l)*qy
+    print "2*k*l*qx", 2*k*l*qx
+    print um," + ", ((k*k-l*l)*qy-2*k*l*qx)/Ks4
+    print um+((k*k-l*l)*qy-2*k*l*qx)/Ks4
+    print "K4=", Ks4
+    print "  "
     return um+((k*k-l*l)*qy-2*k*l*qx)/Ks4
 
 def vg(k,l,vm,qx,qy) :
     Ks2=l*l+k*k
     Ks4=Ks2*Ks2
+    print 'vg'
+    print 'vm=', vm
+    print "(k2-l2)*qx",(k*k-l*l)*qx
+    print "2*k*l*qy", 2*k*l*qy
+    print vm," + ", ((k*k-l*l)*qx+2*k*l*qy)/Ks4
+    print vm+((k*k-l*l)*qx+2*k*l*qy)/Ks4
+    print "K4=", Ks4
+    quit()
     return vm+((k*k-l*l)*qx+2*k*l*qy)/Ks4
 
 def kt(k,l,umx,vmx,qxy,qxx) :
@@ -432,7 +448,7 @@ print "  "
 # Solving for the ray path for different forcing sites (initial locations of rays):
 
 #Nloc = lon0.size
-for iloc in range(loc[0],loc[1]+1) :
+for iloc in range(loc[1],loc[1]+1) :
     print " Location #", iloc
 
     i = np.argmin(np.absolute(lons-lon0[iloc]))
@@ -618,7 +634,7 @@ for iloc in range(loc[0],loc[1]+1) :
                     x=xn[t]
                     y=yn[t]
 
-                    fout.write(frmt.format(t,t/24.,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius*np.cos(latn[t]*dtr),kn[t],kn[t]*kn[t]+ln[t]*ln[t],
+                    fout.write(frmt.format(t,t/24.,lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius*np.cos(latn[t]*dtr),ln[t],kn[t]*kn[t]+ln[t]*ln[t],
                     uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0],
                     qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]))
                 fout.close()
