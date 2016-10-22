@@ -24,7 +24,6 @@ from scipy import interpolate
 
 print "Calculating 2d ray paths"
 
-
 # Parameters
 
 pi = np.pi
@@ -429,7 +428,8 @@ BetaMint = interpolate.interp2d(xm, ym[1:-1], BetaM[1:-1,:], kind='cubic')
 
 def Kt(k,um,fr,BetaM):
     Kt = np.nan
-    Kt = np.sqrt(BetaM/(um-fr/k))
+    if BetaM > 0 and um-fr/k > 0:
+        Kt = np.sqrt(BetaM/(um-fr/k))
     return Kt
 
 def ug(k,l,fr,BetaM) :
@@ -458,9 +458,9 @@ def lt(um,vg,l,BetaM,ydel) :
      Ks_lt = np.empty(2)
      Ks_lt[:] = np.nan
      Ksy_lt = np.zeros_like(Ks_lt)
-     if BetaM.all > 0 and um.all > 0 :
+     if all(BetaM > 0) and all(um > 0) :
          for i in range(2) :
-             print "Ks_lt", BetaM[i], um[i]
+            #  print "Ks_lt", BetaM[i], um[i]
              Ks_lt[i] = np.sqrt(BetaM[i]/um[i])
         #  print Ks_lt
          Ksy_lt = (Ks_lt[1]-Ks_lt[0])/ydel
@@ -547,7 +547,11 @@ for iloc in loc :
             # lroot = np.roots(coeff)
             # print "  initial l = ", lroot*radius
 
-            linit = np.sqrt(np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk)
+            linit = np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk
+            if linit >= 0 :
+                linit = np.sqrt(np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk)
+            else:
+                linit = np.nan
             lroot = np.array([linit,-linit])
 
             print 'linit ', linit
@@ -605,7 +609,7 @@ for iloc in loc :
 
                     for t in range(0,Nsteps) :
                     #for t in range(0,24) :
-                        print '  '
+                        print '  t=',t
                         # if np.equal(np.remainder(t,40),0) :
                         #    print "    t = ", t
 
@@ -620,9 +624,11 @@ for iloc in loc :
                             x0=xn[t]
                             y0=yn[t]
                             k0=kn[t]
-                            l0 = np.nan
                             l0 = np.square(Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0)))-k0*k0
-                            l0 = np.sqrt(l0)
+                            if l0 >= 0:
+                                l0 = np.sqrt(l0)
+                            else:
+                                l0 = np.nan
                             if R == 0 :
                                 l0 = l0
                             else :
@@ -636,6 +642,8 @@ for iloc in loc :
                             # print k0,l0
                             # print ' '
 
+                        if np.isnan(l0) :
+                            break
 
                         # # Runge-Kutta method
 
@@ -764,12 +772,32 @@ for iloc in loc :
                         KK=np.sqrt(kn[t]*kn[t]*np.square(np.cos(latn[t]*dtr))+ln[t]*ln[t])*radius
                         KK1 = np.sqrt(kn[t]*kn[t] + ln[t]*ln[t])
                         KKom = Kt(kn[t],umint(x,y),fr,BetaMint(x,y))
+                        if np.isnan(KKom) :
+                            KKom=np.array([np.nan])
+
                         l0 = np.square(Kt(kn[t],umint(x,y),fr,BetaMint(x,y)))-kn[t]*kn[t]
-                        l0 = np.sqrt(l0)
+                        if l0 >= 0 :
+                            l0 = np.sqrt(l0)
+                        else:
+                            l0=np.array([np.nan])
                         if R == 0:
                             l0=l0
                         else:
                             l0=-l0
+                        if np.isnan(l0) :
+                            l0=np.array([np.nan])
+
+                        print t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t]
+
+                        print kn[t]*radius*np.cos(latn[t]*dtr)
+                        print kn[t]
+                        print ln[t]*radius
+                        print ln[t]
+                        print l0[0]*radius
+                        print l0[0]
+                        print KK,KK1,KKom[0]
+                        print uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0]
+                        print qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]
 
                         fout.write(frmt.format(t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t],
                         kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius,ln[t],l0[0]*radius,l0[0],
