@@ -454,11 +454,14 @@ def lt(um,vg,l,BetaM,ydel) :
      print ' um', um
     #  print ' ug', ug
      print ' BetaM', BetaM
-     Ks_lt = np.zeros(2)
+     Ks_lt = np.empty(2)
+     Ks_lt[:] = np.nan
      Ksy_lt = np.zeros_like(Ks_lt)
      if BetaM.all > 0 and um.all > 0 :
          for i in range(2) :
+             print "Ks_lt", BetaM[i], um[i]
              Ks_lt[i] = np.sqrt(BetaM[i]/um[i])
+         print Ks_lt
          Ksy_lt = (Ks_lt[1]-Ks_lt[0])/ydel
          print ' Ks=',Ks_lt
          print ' Ks*=',Ks_lt*radius
@@ -610,10 +613,8 @@ for iloc in loc :
                     for t in range(0,Nsteps) :
                     #for t in range(0,24) :
                         print '  '
-                        if np.equal(np.remainder(t,40),0) :
-                           print "    t = ", t
-                           #print '    spotl imaginary part: {}'.format(np.imag(spotl))
-                        # print "    t = ", t
+                        # if np.equal(np.remainder(t,40),0) :
+                        #    print "    t = ", t
 
                         if t==0 :
                             x0=xn[0]=xm[i]
@@ -624,8 +625,6 @@ for iloc in loc :
                             latn[0]=lat0[iloc]
                         else :
                             x0=xn[t]
-                            if np.isnan(x0):
-                                continue
                             y0=yn[t]
                             k0=kn[t]
                             l0=ln[t]
@@ -636,6 +635,13 @@ for iloc in loc :
                             else :
                                 l0 = -l0
                             print ' l0=',l0,'ln=',ln[t]
+                            print ' t = ',t
+                            print x0,y0
+                            print umint(x0,y0),BetaMint(x0,y0)
+                            print Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0))
+                            print k0,l0
+                            print ' '
+
 
                         # # Runge-Kutta method
 
@@ -688,7 +694,7 @@ for iloc in loc :
                         print ' l2*',l2*radius
                         if l2 == -1 :
                             print ' RAY Terminated: dldt = nan'
-                            continue
+                            break
 
                         kx2, ky2, kk2, kl2 = rk(x2,y2,k2,l2)
 
@@ -730,9 +736,9 @@ for iloc in loc :
                         # print ' '
                         print ' ug',dx/dt
                         print ' vg',dy/dt
-                        if np.absolute(dy/dt) < 0.5:
+                        if np.absolute(dy/dt) < 0.5 or np.isnan(dl):
                             print 'Ray terminated: vg =', dy/dt
-                            continue
+                            break
 
                         # print 'x0+dx=',x0,'+',dx,'=',xn[tn]
                         # print 'y0+dy=',y0,'+',dy,'=',yn[tn]
@@ -762,7 +768,7 @@ for iloc in loc :
                         y=yn[t]
 
                         KK=np.sqrt(kn[t]*kn[t]*np.square(np.cos(latn[t]*dtr))+ln[t]*ln[t])*radius
-                        KK1 = kn[t]*kn[t] + ln[t]*ln[t]
+                        KK1 = np.sqrt(kn[t]*kn[t] + ln[t]*ln[t])
                         KKom = Kt(kn[t],umint(x,y),fr,BetaMint(x,y))
                         l0 = np.square(Kt(kn[t],umint(x,y),fr,BetaMint(x,y)))-kn[t]*kn[t]
                         l0 = np.sqrt(l0)
