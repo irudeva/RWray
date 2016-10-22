@@ -2,6 +2,7 @@ data/
 sources/
 output/
 scripts/matlab/spherepack
+scripts/tmp
 
 *.mat
 *.swp

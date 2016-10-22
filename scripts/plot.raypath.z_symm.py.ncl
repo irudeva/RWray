@@ -14,8 +14,8 @@ lat = (/"15","20","50"/)
   do loc  = 1,1
    do root = 0,1
     ;period = (/"-60","60","-30","30","Inf"/)
-    ;period = (/"_inf","-14","14"/)
-    period = (/"-14"/)
+    period = (/"_inf","-14","14"/)
+    ;period = (/"-14"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
      fout = "../output/zon_symm/ray_zs_vl_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
@@ -68,7 +68,7 @@ lat = (/"15","20","50"/)
   ytxt = yleg
 ; *** Map plotted ******************************************************************
 
-     do k    = 1,1
+     do k    = 1,6
      print("k="+k)
 
       fin = "../output/zon_symm/raypath_zs_vl_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root

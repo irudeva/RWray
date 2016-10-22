@@ -37,8 +37,8 @@ e_omega=7.292e-5 #rotation rate of Earth (rad/s)
 day2s=24*60*60 #in seconds
 min2s = 60
 #Periods = np.array([float('inf'), -50, -14 ])*day2s
-Periods = np.array([-14])*day2s
-#Periods = np.array([float('inf'), 14, -14])*day2s
+#Periods = np.array([-14])*day2s
+Periods = np.array([float('inf'), 14, -14])*day2s
 
 freq = 2*pi/Periods
 nfreq=freq.size
@@ -47,7 +47,7 @@ int_time=15*day2s  #integration time
 Nsteps = int_time/dt
 
 #k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
-k_wavenumbers=np.array([1]) #  initial k wave number:
+k_wavenumbers=np.array([1,2,3,4,5,6]) #  initial k wave number:
 
 lon0 = np.array([180])
 lat0 = np.array([20])
@@ -428,6 +428,7 @@ BetaMint = interpolate.interp2d(xm, ym[1:-1], BetaM[1:-1,:], kind='cubic')
 ##---Derivatives(eq.9 and 10 in Karoly 1983)---------------------------------------
 
 def Kt(k,um,fr,BetaM):
+    Kt = np.nan
     Kt = np.sqrt(BetaM/(um-fr/k))
     return Kt
 
@@ -451,9 +452,9 @@ def lt(um,vg,l,BetaM,ydel) :
     #      cg = -cg
     #  print ' ug, vg, cg', ug, vg, cg
     #  print 'lt:'
-     print ' um', um
+    #  print ' um', um
     #  print ' ug', ug
-     print ' BetaM', BetaM
+    #  print ' BetaM', BetaM
      Ks_lt = np.empty(2)
      Ks_lt[:] = np.nan
      Ksy_lt = np.zeros_like(Ks_lt)
@@ -461,14 +462,14 @@ def lt(um,vg,l,BetaM,ydel) :
          for i in range(2) :
              print "Ks_lt", BetaM[i], um[i]
              Ks_lt[i] = np.sqrt(BetaM[i]/um[i])
-         print Ks_lt
+        #  print Ks_lt
          Ksy_lt = (Ks_lt[1]-Ks_lt[0])/ydel
-         print ' Ks=',Ks_lt
-         print ' Ks*=',Ks_lt*radius
-         print ' Ksy=', Ksy_lt
+        #  print ' Ks=',Ks_lt
+        #  print ' Ks*=',Ks_lt*radius
+        #  print ' Ksy=', Ksy_lt
          lt = vg*Ks_lt[0]*Ksy_lt/l
-         print ' lt=',lt
-         print ' '
+        #  print ' lt=',lt
+        #  print ' '
      else :
          print 'ERROR: Either BetaM or um < 0 '
          print ' BetaM=', BetaM
@@ -484,18 +485,10 @@ def rk(x,y,k,l):
     #dldt:
     y1=y
     y2=y+yt*dt
-    print ' y1=',y1
-    print ' y2=',y2
+    # print ' y1=',y1
+    # print ' y2=',y2
     yrange = np.linspace(y1,y2,num=2)
     #yrange = np.array([y1,y2])
-    print 'yrange=', yrange
-    print ' umint(x,y1)',umint(x,y1)
-    print ' umint(x,y2)',umint(x,y2)
-    print ' yt=', yt
-    print ' BetaMint(x,y1)',BetaMint(x,y1)
-    print ' BetaMint(x,y2)',BetaMint(x,y2)
-    # print ' BetaMint(x,yrange)',BetaMint(x,yrange)
-    print ' y2-y1', y2-y1
     # dldt=lt(umint(x,yrange),yt,l,BetaMint(x,yrange),y2-y1)
     dldt=lt(np.array([umint(x,y1),umint(x,y2)]),yt,l,np.array([BetaMint(x,y1),BetaMint(x,y2)]),y2-y1)
     # print ' dldt=',dldt
@@ -627,20 +620,21 @@ for iloc in loc :
                             x0=xn[t]
                             y0=yn[t]
                             k0=kn[t]
-                            l0=ln[t]
+                            l0 = np.nan
                             l0 = np.square(Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0)))-k0*k0
                             l0 = np.sqrt(l0)
                             if R == 0 :
                                 l0 = l0
                             else :
                                 l0 = -l0
-                            print ' l0=',l0,'ln=',ln[t]
-                            print ' t = ',t
-                            print x0,y0
-                            print umint(x0,y0),BetaMint(x0,y0)
-                            print Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0))
-                            print k0,l0
-                            print ' '
+                            l0=ln[t]
+                            # print ' l0=',l0,'ln=',ln[t]
+                            # print ' t = ',t
+                            # print x0,y0
+                            # print umint(x0,y0),BetaMint(x0,y0)
+                            # print Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0))
+                            # print k0,l0
+                            # print ' '
 
 
                         # # Runge-Kutta method
@@ -756,9 +750,9 @@ for iloc in loc :
 
 
                     if fr==0 :
-                        fout = open('../output/zon_symm/raypath_zs_vl_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
+                        fout = open('../output/zon_symm/raypath_zs_vln_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
                     else :
-                        fout = open('../output/zon_symm/raypath_zs_vl_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day2s),k,R),'w')
+                        fout = open('../output/zon_symm/raypath_zs_vln_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day2s),k,R),'w')
                     frmt = "{:>5} {:>3} {:>4}"+" {:>6}"*2+(" {:>6}"+" {:>9}")*3+" {:>9}"*3+" {:>7}"*4+" {:>9}"*11+" \n"
                     fout.write(frmt.
                         format('t','hr','day','lon','lat','k*rad','k','l*rad','l','l0*rad','l0','K','KK','Kom','u','v','um','vm','umx','vmx','umy','vmy','q','qx','qy','BetaM','qxx','qyy','qxy'))
