@@ -9,17 +9,16 @@ col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-lon = (/"45","0","120"/)
-lat = (/"15","30","50"/)
-print(lon+" "+lat)
-  do loc  = 2,2
+lon = (/"45","180","120"/)
+lat = (/"15","20","50"/)
+  do loc  = 1,1
    do root = 0,1
     ;period = (/"-60","60","-30","30","Inf"/)
-    period = (/"_inf","50","20"/)
-    ;period = (/"_inf"/)
+    ;period = (/"_inf","-14","14"/)
+    period = (/"-14"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
-     fout = "../output/zon_symm/ray_zs_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
+     fout = "../output/zon_symm/ray_zs_vl_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
 
 ; ***  Plotting  *******************************************************************
   wks  = gsn_open_wks("png",fout)
@@ -69,17 +68,19 @@ print(lon+" "+lat)
   ytxt = yleg
 ; *** Map plotted ******************************************************************
 
-     do k    = 1,6
+     do k    = 1,1
      print("k="+k)
 
-      fin = "../output/zon_symm/raypath_zs_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/zon_symm/raypath_zs_vl_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
       if (fileexists(fin)) then
       print("Raypath from "+fin)
-       ray = asciiread (fin,(/npts,25/),"float")
-       raylon = ray(:,3)
-       raylat = ray(:,4)
+       ray = asciiread (fin,(/npts,29/),"float")
+       raylon = ray(:,5)
+       raylat = ray(:,6)
 
        print(raylon)
+       print(raylat)
+
 
        ; gcdist = gc_latlon(lat1,lon1, lat2,lon2, npts,2)
        ; print (gcdist@gclat+"  "+gcdist@gclon )

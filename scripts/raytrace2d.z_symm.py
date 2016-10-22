@@ -24,6 +24,7 @@ from scipy import interpolate
 
 print "Calculating 2d ray paths"
 
+
 # Parameters
 
 pi = np.pi
@@ -35,8 +36,9 @@ e_omega=7.292e-5 #rotation rate of Earth (rad/s)
 
 day2s=24*60*60 #in seconds
 min2s = 60
-Periods = np.array([float('inf'), 50, 20 ])*day2s
-# Periods = np.array([float('inf')])*day
+#Periods = np.array([float('inf'), -50, -14 ])*day2s
+Periods = np.array([-14])*day2s
+#Periods = np.array([float('inf'), 14, -14])*day2s
 
 freq = 2*pi/Periods
 nfreq=freq.size
@@ -44,12 +46,12 @@ dt = 15 * min2s   #time increment in s
 int_time=15*day2s  #integration time
 Nsteps = int_time/dt
 
-k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
-#k_wavenumbers=np.array([1]) #  initial k wave number:
+#k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
+k_wavenumbers=np.array([1]) #  initial k wave number:
 
-lon0 = np.array([120,45,0])
-lat0 = np.array([50,15,30])
-loc = np.array([0,1,2])  # the range of locations used
+lon0 = np.array([180])
+lat0 = np.array([20])
+loc = np.array([0])  # the range of locations used
 
 #set to 1 to do complex ray tracing
 complex_tracing=False
@@ -62,7 +64,7 @@ print "integration time ", int_time/day2s, " day(s)"
 print "time step ", dt/min2s, " min"
 print "Nsteps = ",Nsteps
 #print "Starting points: lon ",lon0[loc[0]:loc[1]+1],"E lat ",lat0[loc[0]:loc[1]+1],"N"
-print "Starting points: lon ",lon0[2],"E lat ",lat0[2],"N"
+print "Starting points: lon ",lon0,"E lat ",lat0,"N"
 if complex_tracing is True :
     print "Complex tracing is on"
 elif complex_tracing is False :
@@ -187,11 +189,13 @@ uwnd, uwnd_info = prep_data(uwnd, 'tyx')
 vwnd, vwnd_info = prep_data(vwnd, 'tyx')
 
 
-w = VectorWind(uwnd, vwnd)
+#w = VectorWind(uwnd, vwnd)
 # Compute absolute vorticity
+w = VectorWind(u, v)
 q = w.absolutevorticity()
 
-qbar = np.average(q[:,:,nt[nt>0]],axis=2)
+qbar = q
+#qbar = np.average(q[:,:,nt[nt>0]],axis=2)
 print "qbar(4,0)=",qbar[4,0]
 #qbar checked!!!
 
@@ -200,75 +204,99 @@ print "------------------------------"
 print "gradients"
 print np.version.version
 print "  "
-print "----- wind gradients ---------"
+print "----- wind and q gradients ---------"
 
-umx, umy = w.gradient(u)
-vmx, vmy = w.gradient(v)
-## umx, umy Checked!!!
+# umx, umy = w.gradient(u)
+# vmx, vmy = w.gradient(v)
 
-#  alternatively  -  dy does not work!!!
-#umy1, dum = np.gradient(um, dx)  ##ERROR:replace dx with dy!!!
-#dum, umx1 = np.gradient(um, dx)
+dx = np.gradient(xm)
+umx = np.zeros_like(um)
+vmx = np.zeros_like(vm)
+qx = np.zeros_like(q)
+qxx = np.zeros_like(q)
+qxy = np.zeros_like(q)
+for j in range(0,np.size(um,axis=0)) :
+    umx[j,:] = np.gradient(um[j,:],dx)
+    vmx[j,:] = np.gradient(vm[j,:],dx)
+    qx[j,:] = np.gradient(q[j,:],dx)
+    qxx[j,:] = np.gradient(qx[j,:],dx)
 
-print "  "
-print "----- q gradients ---------"
+dy = np.gradient(ym)
+umy = np.zeros_like(um)
+vmy = np.zeros_like(vm)
+qy = np.zeros_like(q)
+qyy = np.zeros_like(q)
+for i in range(0,np.size(um,axis=1)) :
+    umy[:,i] = np.gradient(um[:,i],dy)
+    vmy[:,i] = np.gradient(vm[:,i],dy)
+    qy[:,i] = np.gradient(q[:,i],dy)
+    qyy[:,i] = np.gradient(qy[:,i],dy)
+    qxy[j,:] = np.gradient(qy[j,:],dx)
 
-#Trick to calculate gradient for a scalar * cos(lat)
-
-qx, qy = w.gradient(qbar*coslat[:,None])
-#print "qmx[4,0]=",qmx[4,0]
-#print "qmy[4,0]=",qmy[4,0]
-#print "  "
-
-#   alternatively -  dy does not work
-#qy, dum = np.gradient(qbar, dx)  ##ERROR:replace dx with dy!!!
-#dum, qx = np.gradient(qbar, dx)
-#print "qx[9,4]=",qx[9,4]
-#print "qmx[9,4]=",qmx[9,4]
-#print "  "
-# w.gradient is different from np.gradient at high lat >60N/S
-
-print "  "
-print "----- q second derivatives ---------"
-
-#Trick to calculate gradient for a scalar * cos(lat)
-
-qxx, qxy = w.gradient(qx*coslat[:,None])
-qyx, qyy = w.gradient(qy*coslat[:,None])
-# print "qmyy[4,0]=",qmyy[4,0]
-# print "qmxx[30,0]=",qmxx[30,0]
-# print "qmxy[30,5]=",qmxy[30,5]
-# print "   "
-
-# print "diff[4,5]: ", (qbar[4,4]-qbar[4,6])/(xm[4]-xm[6])
-# print "qx[4,5]=",qx[4,5]
-# print "qmx[4,5]=",qmx[4,5]
 # print "  "
+# print "----- q gradients ---------"
 #
-# print "diff[30,5]: ", (qbar[30,4]-qbar[30,6])/(xm[4]-xm[6])
-# print "diff qbar[30,5]: ", (qbar[30,4]-qbar[30,6])
-# print "diff xm[30,5]: ", (xm[4]-xm[6])
-# print "qx[30,5]=",qx[30,5]
-# print "qmx[30,5]=",qmx[30,5]
-# print "  "
+#Trick to calculate gradient for a scalar * cos(lat)
 
+#qx, qy = w.gradient(qbar*coslat[:,None])
+
+# print "  "
+# print "----- q second derivatives ---------"
+
+#Trick to calculate gradient for a scalar * cos(lat)
+
+# qxx, qxy = w.gradient(qx*coslat[:,None])
+# qyx, qyy = w.gradient(qy*coslat[:,None])
 
 #----BetaM---------------------------------------------------------------------
 print 'Calculate BetaM'
 
-# BetaM == qy - checked !!!!
-
-#coslat[0]=0
-#coslat[-1]=cos1[0]
 cos2=coslat*coslat
 
-dum, cosuy=w.gradient(u*cos2[:,None])
-dum, cosuyy = w.gradient(cosuy/coslat[:,None])
+# dum, cosuy=w.gradient(u*cos2[:,None])
+# dum, cosuyy = w.gradient(cosuy/coslat[:,None])
+#
+# tmp = 2*e_omega *cos2/radius
+# BetaM=tmp[:,None]-cosuyy
+
+#alternative BetaM
+
+# for i in range(0,np.size(um,axis=1)) :
+#  cosuy_np = np.gradient(um[:,i]*cos2,2*pi*radius/360)
+#  cosuyy_np = np.gradient(um[:,i]/cos2,2*pi*radius/360)
+cosuy_np = np.zeros_like(um)
+cosuyy_np = np.zeros_like(um)
+#print dy
+#quit()
+cosuy_np[:,0] = np.gradient(um[:,0]*cos2,dy)
+cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
+for j in range(0,np.size(um,axis=0)) :
+    cosuy_np[j,:] = cosuy_np[j,0]
+    cosuyy_np[j,:] = cosuyy_np[j,0]
 
 tmp = 2*e_omega *cos2/radius
-BetaM=tmp[:,None]-cosuyy
+BetaM_np = tmp[:,None]-cosuyy_np
+BetaM = BetaM_np
 
-#quit()
+
+# for j in range(0,np.size(um,axis=0)) :
+#     for i in range(0,np.size(um,axis=1)) :
+#        print "          ",cosuy[j,i],cosuy_np[j,i]
+#        print i,j,lons[i]," ",lats[j]," ",BetaM[j,i],BetaM_np[j,i]," ", BetaM[j,i]-BetaM_np[j,i]
+#
+#----Ks------------------------------------------------------------------------
+# print 'Calculate Ks'
+#
+# Ks=np.zeros_like(u)
+#
+# for j in range(0,np.size(um,axis=0)) :
+#     for i in range(0,np.size(um,axis=1)) :
+#         Ks[j,i] = np.sqrt(BetaM[j,i]/um[j,i])
+#
+# Ksy = np.zeros_like(Ks)
+# for i in range(0,np.size(Ks,axis=1)) :
+#     Ksy[:,i] = np.gradient(Ks[:,i],dy)
+
 
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
@@ -368,6 +396,7 @@ nc.close()
 ##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"
 
+
 ##---Interpolation-----------------------------------------------------------------
 print "  "
 print "Interpolation"
@@ -396,111 +425,81 @@ qxyint = interpolate.interp2d(xm, ym[1:-1], qxy[1:-1,:], kind='cubic')
 
 BetaMint = interpolate.interp2d(xm, ym[1:-1], BetaM[1:-1,:], kind='cubic')
 
-
 ##---Derivatives(eq.9 and 10 in Karoly 1983)---------------------------------------
 
-def Ks(k,um,fr,BetaM):
-    Ks = np.sqrt(BetaM/(um-fr/k))
-    return Ks
+def Kt(k,um,fr,BetaM):
+    Kt = np.sqrt(BetaM/(um-fr/k))
+    return Kt
 
 def ug(k,l,fr,BetaM) :
     Ks2=l*l+k*k
     Ks4=Ks2*Ks2
-    # print 'ug'
-    # print 'um=', um
-    # print "(k2-l2)*qy",(k*k-l*l)*qy
-    # print "2*k*l*qx", 2*k*l*qx
-    # print um," + ", ((k*k-l*l)*qy-2*k*l*qx)/Ks4
-    # print um+((k*k-l*l)*qy-2*k*l*qx)/Ks4
-    # print "K4=", Ks4
-    # print "  "
-    # return um+((k*k-l*l)*qy-2*k*l*qx)/Ks4
     return fr/k+2*BetaM*k*k/Ks4
 
 def vg(k,l,BetaM) :
     Ks2=l*l+k*k
     Ks4=Ks2*Ks2
-    # # print 'vg'
-    # # print 'vm=', vm
-    # # print "(k2-l2)*qx",(k*k-l*l)*qx
-    # # print "2*k*l*qy", 2*k*l*qy
-    # # print vm," + ", ((k*k-l*l)*qx+2*k*l*qy)/Ks4
-    # # print vm+((k*k-l*l)*qx+2*k*l*qy)/Ks4
-    # # print "K4=", Ks4
-    # return vm+((k*k-l*l)*qx+2*k*l*qy)/Ks4
     return 2*BetaM*k*l/Ks4
 
-def kt(k,l,umx,vmx,qxy,qxx) :
-    # Ks2=l*l+k*k
-    # print 'kt:'
-    # print ' k', k
-    # print ' l', l
-    # print ' k2=',Ks2
-    # print ' k2*=',Ks2*(radius*coslat[j])*(radius*coslat[j])
-    # print '  umx=',umx
-    # print '  -k*umx=',-k*umx
-    # print '  -l*vmx=',-l*vmx
-    # print ' qxy', qxy
-    # print ' qxy*k', qxy*k
-    # print ' qxx', qxx
-    # print ' qxx*l', qxx*l
-    # print ' qxy*k-qxx*l',qxy*k-qxx*l
-    # print ' (qxy*k-qxx*l)/Ks2', (qxy*k-qxx*l)/Ks2
-    # print ' kt', -k*umx-l*vmx+(qxy*k-qxx*l)/Ks2
-    # print 'endkt'
-    # # return 0
-    # return -k*umx-l*vmx+(qxy*k-qxx*l)/Ks2
-    return 0
+# def kt(k,l,umx,vmx,qxy,qxx) :
+    # return 0
 
-def lt(k,l,umy,vmy,qxy,qyy) :
-    # Ks2=l*l+k*k
-    # print 'kl:'
-    # print ' k', k
-    # print ' l', l
-    # print ' k2=',Ks2
-    # print ' k2*=',Ks2*(radius*coslat[j])*(radius*coslat[j])
-    # print '  umy=',umy
-    # print '  -k*umy=',-k*umy
-    # print '  -l*vmy=',-l*vmy
-    # print ' qyy', qyy
-    # print ' qyy*k', qyy*k
-    # print ' qxy', qxy
-    # print ' qxy*l', qxy*l
-    # print ' qyy*k-qxy*l',qyy*k-qxy*l
-    # print ' (qyy*k-qxy*l)/Ks2', (qyy*k-qxy*l)/Ks2
-    # print ' kt', -k*umy-l*vmy+(qyy*k-qxy*l)/Ks2
-    # print 'endkt'
-    # # return 0
-    # return -k*umy-l*vmy+(qyy*k-qxy*l)/Ks2
-    return 0
+#def lt(k,l,umy,vmy,qxy,qyy) :
+def lt(um,vg,l,BetaM,ydel) :
+    #  cg = np.sqrt(ug*ug+vg*vg)
+    #  if (ug > 0 and vg < 0) or (ug < 0 and vg > 0) :
+    #      cg = -cg
+    #  print ' ug, vg, cg', ug, vg, cg
+    #  print 'lt:'
+     print ' um', um
+    #  print ' ug', ug
+     print ' BetaM', BetaM
+     Ks_lt = np.zeros(2)
+     Ksy_lt = np.zeros_like(Ks_lt)
+     if BetaM.all > 0 and um.all > 0 :
+         for i in range(2) :
+             Ks_lt[i] = np.sqrt(BetaM[i]/um[i])
+         Ksy_lt = (Ks_lt[1]-Ks_lt[0])/ydel
+         print ' Ks=',Ks_lt
+         print ' Ks*=',Ks_lt*radius
+         print ' Ksy=', Ksy_lt
+         lt = vg*Ks_lt[0]*Ksy_lt/l
+         print ' lt=',lt
+         print ' '
+     else :
+         print 'ERROR: Either BetaM or um < 0 '
+         print ' BetaM=', BetaM
+         print ' um=', um
+         lt = -1
+     return lt
 
+# Runge-Kutta method
 def rk(x,y,k,l):
     xt=ug(k,l,fr,BetaMint(x,y))
     yt=vg(k,l,BetaMint(x,y))
-    # dkdt=kt(k,l,umxint(x,y),vmxint(x,y),qxyint(x,y),qxxint(x,y))
-    # dldt=lt(k,l,umyint(x,y),vmyint(x,y),qxyint(x,y),qyyint(x,y))
     dkdt=0
-    dldt=0
+    #dldt:
+    y1=y
+    y2=y+yt*dt
+    print ' y1=',y1
+    print ' y2=',y2
+    yrange = np.linspace(y1,y2,num=2)
+    #yrange = np.array([y1,y2])
+    print 'yrange=', yrange
+    print ' umint(x,y1)',umint(x,y1)
+    print ' umint(x,y2)',umint(x,y2)
+    print ' yt=', yt
+    print ' BetaMint(x,y1)',BetaMint(x,y1)
+    print ' BetaMint(x,y2)',BetaMint(x,y2)
+    # print ' BetaMint(x,yrange)',BetaMint(x,yrange)
+    print ' y2-y1', y2-y1
+    # dldt=lt(umint(x,yrange),yt,l,BetaMint(x,yrange),y2-y1)
+    dldt=lt(np.array([umint(x,y1),umint(x,y2)]),yt,l,np.array([BetaMint(x,y1),BetaMint(x,y2)]),y2-y1)
+    # print ' dldt=',dldt
     return xt,yt,dkdt,dldt
 
-# Runge-Kutta method
-def rk4(f, x0, y0, x1, n):
-    vx = [0] * (n + 1)
-    vy = [0] * (n + 1)
-    h = (x1 - x0) / float(n)
-    vx[0] = x = x0
-    vy[0] = y = y0
-    for i in range(1, n + 1):
-        k1 = h * f(x, y)
-        k2 = h * f(x + 0.5 * h, y + 0.5 * k1)
-        k3 = h * f(x + 0.5 * h, y + 0.5 * k2)
-        k4 = h * f(x + h, y + k3)
-        vx[i] = x = x0 + i * h
-        vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
-    return vx, vy
 
 # Mercator to lonlat
-
 def y2lat(a):
     return rtd*(2.0*np.arctan(np.exp(a/radius))-pi/2.0)
 
@@ -517,7 +516,7 @@ print "  "
 # Solving for the ray path for different forcing sites (initial locations of rays):
 
 #Nloc = lon0.size
-for iloc in range(loc[0],loc[0]+1) :
+for iloc in loc :
     print " Location #", iloc
 
     i = np.argmin(np.absolute(lons-lon0[iloc]))
@@ -544,12 +543,7 @@ for iloc in range(loc[0],loc[0]+1) :
             ##  and k by solving the polynomial equation based on the
             ##  dispersion relation (equation 8 in Karoly 1983):
             ##  hange the following to have a non zero frequency:
-            coeff = np.zeros(3)
-            # coeff[0]=vm[j,i]
-            # coeff[1]=um[j,i]*spotk-fr;
-            # coeff[2]=vm[j,i]*spotk*spotk+qx[j,i]
-            # coeff[3]=um[j,i]*np.power(spotk,3)-qy[j,i]*spotk-fr*spotk*spotk
-
+            # coeff = np.zeros(2)
             # coeff[0]=um[j,i]*spotk-fr;
             # coeff[1]=0
             # coeff[2]=um[j,i]*np.power(spotk,3)+fr*spotk*spotk-BetaM[j,i]*spotk
@@ -557,7 +551,7 @@ for iloc in range(loc[0],loc[0]+1) :
             # lroot = np.roots(coeff)
             # print "  initial l = ", lroot*radius
 
-            linit = np.sqrt(np.square(Ks(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk)
+            linit = np.sqrt(np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk)
             lroot = np.array([linit,-linit])
 
             print 'linit ', linit
@@ -599,15 +593,23 @@ for iloc in range(loc[0],loc[0]+1) :
 
                     ## Starting the loop with the above initial k,l, and Ks
 
-                    lonn = np.zeros(Nsteps+1)
-                    latn = np.zeros(Nsteps+1)
-                    xn = np.zeros(Nsteps+1)
-                    yn = np.zeros(Nsteps+1)
-                    kn = np.zeros(Nsteps+1)
-                    ln = np.zeros(Nsteps+1)
+                    lonn = np.empty(Nsteps+1)
+                    latn = np.empty(Nsteps+1)
+                    xn = np.empty(Nsteps+1)
+                    yn = np.empty(Nsteps+1)
+                    kn = np.empty(Nsteps+1)
+                    ln = np.empty(Nsteps+1)
+
+                    lonn[:] = np.nan
+                    latn[:] = np.nan
+                    xn[:] = np.nan
+                    yn[:] = np.nan
+                    kn[:] = np.nan
+                    ln[:] = np.nan
 
                     for t in range(0,Nsteps) :
                     #for t in range(0,24) :
+                        print '  '
                         if np.equal(np.remainder(t,40),0) :
                            print "    t = ", t
                            #print '    spotl imaginary part: {}'.format(np.imag(spotl))
@@ -622,17 +624,30 @@ for iloc in range(loc[0],loc[0]+1) :
                             latn[0]=lat0[iloc]
                         else :
                             x0=xn[t]
+                            if np.isnan(x0):
+                                continue
                             y0=yn[t]
                             k0=kn[t]
                             l0=ln[t]
+                            l0 = np.square(Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0)))-k0*k0
+                            l0 = np.sqrt(l0)
+                            if R == 0 :
+                                l0 = l0
+                            else :
+                                l0 = -l0
+                            print ' l0=',l0,'ln=',ln[t]
 
                         # # Runge-Kutta method
 
                         # RK step 1
                         print 'RK step 1'
+                        print 'x0=', x0
+                        print 'y0=', y0
                         kx0, ky0, kk0, kl0 = rk(x0,y0,k0,l0)
-                        print "------------", k0, l0
-                        #print "------------", kk0, kl0
+                        print ' l0, kl0', l0, kl0
+                        if l0 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            continue
 
                         # RK step 2
                         print 'RK step 2'
@@ -649,7 +664,11 @@ for iloc in range(loc[0],loc[0]+1) :
                         # print ' k1*',k1*(radius*coslat[j])
                         # print 'endk1'
                         l1=l0+0.5*kl0*dt
-                        # print ' l1*',l1*(radius*coslat[j])
+                        print ' l0, l1, lkl0', l0, l1, kl0
+                        print ' l1*',l1*radius*coslat[j]
+                        if l1 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            continue
 
                         kx1, ky1, kk1, kl1 = rk(x1,y1,k1,l1)
 
@@ -665,7 +684,11 @@ for iloc in range(loc[0],loc[0]+1) :
                         # print ' k2*',k2*(radius*coslat[j])
                         # print 'endk2'
                         l2=l0+0.5*kl1*dt
-                        # print ' l2*',l2*(radius*coslat[j])
+                        print ' l1, l2, kl1', l1, l2, kl1
+                        print ' l2*',l2*radius
+                        if l2 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            continue
 
                         kx2, ky2, kk2, kl2 = rk(x2,y2,k2,l2)
 
@@ -681,7 +704,11 @@ for iloc in range(loc[0],loc[0]+1) :
                         # print ' k3*',k3*(radius*coslat[j])
                         # print 'endk3'
                         l3=l0+kl2*dt
-                        # print ' l2*',l2*(radius*coslat[j])
+                        print ' l2, l3, kl2', l2, l3, kl2
+                        print ' l3*',l3*(radius)
+                        if l3 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            continue
 
                         kx3, ky3, kk3, kl3= rk(x3,y3,k3,l3)
 
@@ -691,41 +718,28 @@ for iloc in range(loc[0],loc[0]+1) :
                         dk=dt*(kk0+2*kk1+2*kk2+kk3)/6;
                         dl=dt*(kl0+2*kl1+2*kl2+kl3)/6;
 
-                        # print ' '
-                        # print 'x0=',x0, ' kx0=', kx0
-                        # print 'x1=',x1, ' kx1=', kx1
-                        # print 'x2=',x2, ' kx2=', kx2
-                        # print 'x3=',x3, ' kx0=', kx0
-                        # print 'dx=',dx/dt
-                        #
-                        # print ' '
-                        # print 'y0=',y0, ' ky0=', ky0
-                        # print 'y1=',y1, ' ky1=', ky1
-                        # print 'y2=',y2, ' ky2=', ky2
-                        # print 'y3=',y3, ' ky0=', ky0
-                        # print 'dy=',dy/dt
-                        #
-                        # print ' '
-                        # print 'x0=',x0
-                        # print 'dx=',dx
-                        # print 'y0=',y0
-                        # print 'dy=',dy
-
                         tn=t+1
                         xn[tn] = x0+dx
                         if xn[tn]>=xm360 :
                          xn[tn]=xn[tn]-xm360;
                         yn[tn] = y0+dy
 
-
                         kn[tn] = k0+dk
                         ln[tn] = l0+dl
 
                         # print ' '
-                        # print 'x0+dx=',x0,'+',dx,'=',xn
-                        # print 'y0+dy=',y0,'+',dy,'=',yn
-                        # print 'k0+dk=',k0,'+',dk,'=',kn
-                        # print 'l0+dl=',l0,'+',dl,'=',ln
+                        print ' ug',dx/dt
+                        print ' vg',dy/dt
+                        if np.absolute(dy/dt) < 0.5:
+                            print 'Ray terminated: vg =', dy/dt
+                            continue
+
+                        # print 'x0+dx=',x0,'+',dx,'=',xn[tn]
+                        # print 'y0+dy=',y0,'+',dy,'=',yn[tn]
+                        # print 'k0+dk=',k0,'+',dk,'=',kn[tn]
+                        print ' kl0,kl1,kl2,kl3=',kl0,kl1,kl2,kl3
+                        print ' dl/dt', dl/dt
+                        print 'l0+dl=',l0,'+',dl,'=',ln[tn]
 
                         # Ks =np.sqrt(kn*kn+ln*ln)
 
@@ -734,29 +748,32 @@ for iloc in range(loc[0],loc[0]+1) :
                         lonn[tn] = xn[tn]*rtd/radius
                         latn[tn] = y2lat(yn[tn])
 
-                        ##Testing
-                        # it = np.argmin(np.absolute(lons-lonn[tn]))
-                        # jt = np.argmin(np.absolute(lats-latn[tn]))
-                        # print "  vgrd=",vm[jt,it],"  ugrd=",um[jt,it]
-
-                        #print t, lonn[tn], latn[tn]
-
 
                     if fr==0 :
-                        fout = open('../output/zon_symm/raypath_zs_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
+                        fout = open('../output/zon_symm/raypath_zs_vl_loc{:d}N_{:d}E_period{}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],'_inf',k,R),'w')
                     else :
-                        fout = open('../output/zon_symm/raypath_zs_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day2s),k,R),'w')
-                    frmt = "{:>5} {:>3} {:>4}"+" {:>6}"*2+(" {:>6}"+" {:>9}")*2+" {:>9}"+" {:>7}"*4+" {:>9}"*11+" \n"
+                        fout = open('../output/zon_symm/raypath_zs_vl_loc{:d}N_{:d}E_period{:0.0f}_k{:d}_root{:d}'.format(lat0[iloc],lon0[iloc],2*pi/(fr*day2s),k,R),'w')
+                    frmt = "{:>5} {:>3} {:>4}"+" {:>6}"*2+(" {:>6}"+" {:>9}")*3+" {:>9}"*3+" {:>7}"*4+" {:>9}"*11+" \n"
                     fout.write(frmt.
-                        format('t','hr','day','lon','lat','k*rad','k','l*rad','l','Ks','u','v','um','vm','umx','vmx','umy','vmy','q','qx','qy','BetaM','qxx','qyy','qxy'))
-                    frmt = "{:>5d} {:>3d} {:>4.1f}"+" {:>6.2f}"*2+(" {:>6.2f}"+" {:>9.2e}")*2+" {:>9.2f}"+" {:>7.2f}"*4+" {:>9.2e}"*11+" \n"
+                        format('t','hr','day','lon','lat','k*rad','k','l*rad','l','l0*rad','l0','K','KK','Kom','u','v','um','vm','umx','vmx','umy','vmy','q','qx','qy','BetaM','qxx','qyy','qxy'))
+                    frmt = "{:>5d} {:>3d} {:>4.1f}"+" {:>6.2f}"*2+(" {:>6.2f}"+" {:>9.2e}")*3+" {:>9.2f}"+" {:>9.2e}"*2+" {:>7.2f}"*4+" {:>9.2e}"*11+" \n"
                     for t in range(0,Nsteps+1,12*3600/dt) :
                         x=xn[t]
                         y=yn[t]
 
                         KK=np.sqrt(kn[t]*kn[t]*np.square(np.cos(latn[t]*dtr))+ln[t]*ln[t])*radius
+                        KK1 = kn[t]*kn[t] + ln[t]*ln[t]
+                        KKom = Kt(kn[t],umint(x,y),fr,BetaMint(x,y))
+                        l0 = np.square(Kt(kn[t],umint(x,y),fr,BetaMint(x,y)))-kn[t]*kn[t]
+                        l0 = np.sqrt(l0)
+                        if R == 0:
+                            l0=l0
+                        else:
+                            l0=-l0
 
-                        fout.write(frmt.format(t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t],kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius,ln[t],KK,
+                        fout.write(frmt.format(t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t],
+                        kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius,ln[t],l0[0]*radius,l0[0],
+                        KK,KK1,KKom[0],
                         uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0],
                         qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]))
                     fout.close()
