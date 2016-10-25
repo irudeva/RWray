@@ -36,8 +36,9 @@ e_omega=7.292e-5 #rotation rate of Earth (rad/s)
 day2s=24*60*60 #in seconds
 min2s = 60
 #Periods = np.array([float('inf'), -50, -14 ])*day2s
+Periods = np.array([float('inf')])*day2s
 #Periods = np.array([-14])*day2s
-Periods = np.array([float('inf'), 14, -14])*day2s
+#Periods = np.array([float('inf'), 14, -14])*day2s
 
 freq = 2*pi/Periods
 nfreq=freq.size
@@ -46,7 +47,7 @@ int_time=15*day2s  #integration time
 Nsteps = int_time/dt
 
 #k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
-k_wavenumbers=np.array([1,2,3,4,5,6]) #  initial k wave number:
+k_wavenumbers=np.array([5]) #  initial k wave number:
 
 lon0 = np.array([180])
 lat0 = np.array([20])
@@ -446,30 +447,25 @@ def vg(k,l,BetaM) :
     # return 0
 
 #def lt(k,l,umy,vmy,qxy,qyy) :
-def lt(um,vg,l,BetaM,ydel) :
-    #  cg = np.sqrt(ug*ug+vg*vg)
-    #  if (ug > 0 and vg < 0) or (ug < 0 and vg > 0) :
-    #      cg = -cg
-    #  print ' ug, vg, cg', ug, vg, cg
-    #  print 'lt:'
-    #  print ' um', um
-    #  print ' ug', ug
-    #  print ' BetaM', BetaM
-     Ks_lt = np.empty(2)
-     Ks_lt[:] = np.nan
-     Ksy_lt = np.zeros_like(Ks_lt)
-     if all(BetaM > 0) and all(um > 0) :
+def lt(k,fr,um,vg,l,BetaM,ydel) :
+     print 'lt:'
+     print ' um', um
+     print ' BetaM', BetaM
+     print ' ydel',ydel
+     K_lt = np.empty(2)
+     K_lt[:] = np.nan
+     Ky_lt = np.zeros_like(K_lt)
+     if all(BetaM >= 0) and all(um > 0) :
          for i in range(2) :
-            #  print "Ks_lt", BetaM[i], um[i]
-             Ks_lt[i] = np.sqrt(BetaM[i]/um[i])
-        #  print Ks_lt
-         Ksy_lt = (Ks_lt[1]-Ks_lt[0])/ydel
-        #  print ' Ks=',Ks_lt
-        #  print ' Ks*=',Ks_lt*radius
-        #  print ' Ksy=', Ksy_lt
-         lt = vg*Ks_lt[0]*Ksy_lt/l
-        #  print ' lt=',lt
-        #  print ' '
+             K_lt[i] = Kt(k,um[i],fr,BetaM[i])
+         print K_lt
+         Ky_lt = (K_lt[1]-K_lt[0])/ydel
+         print ' K=',K_lt
+         print ' K*=',K_lt*radius
+         print ' Ky=', Ky_lt
+         lt = vg*K_lt[0]*Ky_lt/l
+         print ' lt=',lt
+         print ' '
      else :
          print 'ERROR: Either BetaM or um < 0 '
          print ' BetaM=', BetaM
@@ -478,7 +474,7 @@ def lt(um,vg,l,BetaM,ydel) :
      return lt
 
 # Runge-Kutta method
-def rk(x,y,k,l):
+def rk(x,y,k,l,fr):
     xt=ug(k,l,fr,BetaMint(x,y))
     yt=vg(k,l,BetaMint(x,y))
     dkdt=0
@@ -490,7 +486,7 @@ def rk(x,y,k,l):
     yrange = np.linspace(y1,y2,num=2)
     #yrange = np.array([y1,y2])
     # dldt=lt(umint(x,yrange),yt,l,BetaMint(x,yrange),y2-y1)
-    dldt=lt(np.array([umint(x,y1),umint(x,y2)]),yt,l,np.array([BetaMint(x,y1),BetaMint(x,y2)]),y2-y1)
+    dldt=lt(k,fr,np.array([umint(x,y1),umint(x,y2)]),yt,l,np.array([BetaMint(x,y1),BetaMint(x,y2)]),y2-y1)
     # print ' dldt=',dldt
     return xt,yt,dkdt,dldt
 
@@ -627,17 +623,19 @@ for iloc in loc :
                             l0 = np.square(Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0)))-k0*k0
                             if l0 >= 0:
                                 l0 = np.sqrt(l0)
+                                if ln[t] >= 0 :
+                                    l0 = l0
+                                else :
+                                    l0 = -l0
                             else:
                                 l0 = np.nan
-                            if R == 0 :
-                                l0 = l0
-                            else :
-                                l0 = -l0
+                            # if R == 0 :
+                            print ' l0=',l0,'ln=',ln[t]
+    # zs_vln
                             l0=ln[t]
-                            # print ' l0=',l0,'ln=',ln[t]
-                            # print ' t = ',t
+
                             # print x0,y0
-                            # print umint(x0,y0),BetaMint(x0,y0)
+                            print 'umint=',umint(x0,y0),'BetaM=',BetaMint(x0,y0)
                             # print Kt(k0,umint(x0,y0),fr,BetaMint(x0,y0))
                             # print k0,l0
                             # print ' '
@@ -649,13 +647,13 @@ for iloc in loc :
 
                         # RK step 1
                         print 'RK step 1'
-                        print 'x0=', x0
-                        print 'y0=', y0
-                        kx0, ky0, kk0, kl0 = rk(x0,y0,k0,l0)
+                        # print 'x0=', x0
+                        # print 'y0=', y0
+                        kx0, ky0, kk0, kl0 = rk(x0,y0,k0,l0,fr)
                         print ' l0, kl0', l0, kl0
-                        if l0 == -1 :
+                        if kl0 == -1 :
                             print ' RAY Terminated: dldt = nan'
-                            continue
+                            break
 
                         # RK step 2
                         print 'RK step 2'
@@ -672,13 +670,13 @@ for iloc in loc :
                         # print ' k1*',k1*(radius*coslat[j])
                         # print 'endk1'
                         l1=l0+0.5*kl0*dt
-                        print ' l0, l1, lkl0', l0, l1, kl0
-                        print ' l1*',l1*radius*coslat[j]
-                        if l1 == -1 :
-                            print ' RAY Terminated: dldt = nan'
-                            continue
+                        # print ' l0, l1, lkl0', l0, l1, kl0
+                        # print ' l1*',l1*radius*coslat[j]
 
-                        kx1, ky1, kk1, kl1 = rk(x1,y1,k1,l1)
+                        kx1, ky1, kk1, kl1 = rk(x1,y1,k1,l1,fr)
+                        if kl1 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            break
 
                         # RK step 3
                         print 'RK step 3'
@@ -692,13 +690,13 @@ for iloc in loc :
                         # print ' k2*',k2*(radius*coslat[j])
                         # print 'endk2'
                         l2=l0+0.5*kl1*dt
-                        print ' l1, l2, kl1', l1, l2, kl1
-                        print ' l2*',l2*radius
-                        if l2 == -1 :
+                        # print ' l1, l2, kl1', l1, l2, kl1
+                        # print ' l2*',l2*radius
+
+                        kx2, ky2, kk2, kl2 = rk(x2,y2,k2,l2,fr)
+                        if kl2 == -1 :
                             print ' RAY Terminated: dldt = nan'
                             break
-
-                        kx2, ky2, kk2, kl2 = rk(x2,y2,k2,l2)
 
                         # RK step 4
                         print 'RK step 4'
@@ -712,13 +710,13 @@ for iloc in loc :
                         # print ' k3*',k3*(radius*coslat[j])
                         # print 'endk3'
                         l3=l0+kl2*dt
-                        print ' l2, l3, kl2', l2, l3, kl2
-                        print ' l3*',l3*(radius)
-                        if l3 == -1 :
-                            print ' RAY Terminated: dldt = nan'
-                            continue
+                        # print ' l2, l3, kl2', l2, l3, kl2
+                        # print ' l3*',l3*(radius)
 
-                        kx3, ky3, kk3, kl3= rk(x3,y3,k3,l3)
+                        kx3, ky3, kk3, kl3= rk(x3,y3,k3,l3,fr)
+                        if kl3 == -1 :
+                            print ' RAY Terminated: dldt = nan'
+                            break
 
                         #RK4 results
                         dx=dt*(kx0+2*kx1+2*kx2+kx3)/6;
@@ -736,9 +734,10 @@ for iloc in loc :
                         ln[tn] = l0+dl
 
                         # print ' '
-                        print ' ug',dx/dt
-                        print ' vg',dy/dt
-                        if np.absolute(dy/dt) < 0.5 or np.isnan(dl):
+                        # print ' ug',dx/dt
+                        # print ' vg',dy/dt
+                        # if np.absolute(dy/dt)<0.5 or np.isnan(dl):
+                        if np.isnan(dl):
                             print 'Ray terminated: vg =', dy/dt
                             break
 
@@ -778,26 +777,24 @@ for iloc in loc :
                         l0 = np.square(Kt(kn[t],umint(x,y),fr,BetaMint(x,y)))-kn[t]*kn[t]
                         if l0 >= 0 :
                             l0 = np.sqrt(l0)
+                            if ln[t] >= 0 :
+                                l0 = l0
+                            else :
+                                l0 = -l0
                         else:
                             l0=np.array([np.nan])
-                        if R == 0:
-                            l0=l0
-                        else:
-                            l0=-l0
-                        if np.isnan(l0) :
-                            l0=np.array([np.nan])
-
-                        print t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t]
-
-                        print kn[t]*radius*np.cos(latn[t]*dtr)
-                        print kn[t]
-                        print ln[t]*radius
-                        print ln[t]
-                        print l0[0]*radius
-                        print l0[0]
-                        print KK,KK1,KKom[0]
-                        print uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0]
-                        print qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]
+                        #
+                        # print t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t]
+                        #
+                        # print kn[t]*radius*np.cos(latn[t]*dtr)
+                        # print kn[t]
+                        # print ln[t]*radius
+                        # print ln[t]
+                        # print l0[0]*radius
+                        # print l0[0]
+                        # print KK,KK1,KKom[0]
+                        # print uint(x,y)[0],vint(x,y)[0],umint(x,y)[0],vmint(x,y)[0],umxint(x,y)[0],vmxint(x,y)[0],umyint(x,y)[0],vmyint(x,y)[0]
+                        # print qint(x,y)[0],qxint(x,y)[0],qyint(x,y)[0],BetaMint(x,y)[0],qxxint(x,y)[0],qyyint(x,y)[0],qxyint(x,y)[0]
 
                         fout.write(frmt.format(t,t*dt/3600,t*dt/(3600*24.),lonn[t],latn[t],
                         kn[t]*radius*np.cos(latn[t]*dtr),kn[t],ln[t]*radius,ln[t],l0[0]*radius,l0[0],
