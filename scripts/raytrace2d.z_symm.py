@@ -5,6 +5,8 @@ from  windspharm.standard import VectorWind
 from windspharm.tools import prep_data, recover_data, order_latdim
 from scipy import interpolate
 
+
+
 # This is a variation of the RW ray tracing for zonally symmetric flow, i.e.
 # u=u(y)  v=0
 # ! take zonal average of u
@@ -36,8 +38,8 @@ e_omega=7.292e-5 #rotation rate of Earth (rad/s)
 day2s=24*60*60 #in seconds
 min2s = 60
 #Periods = np.array([float('inf'), -50, -14 ])*day2s
-Periods = np.array([float('inf')])*day2s
-#Periods = np.array([-14])*day2s
+#Periods = np.array([float('inf')])*day2s
+Periods = np.array([-14])*day2s
 #Periods = np.array([float('inf'), 14, -14])*day2s
 
 freq = 2*pi/Periods
@@ -47,7 +49,7 @@ int_time=15*day2s  #integration time
 Nsteps = int_time/dt
 
 #k_wavenumbers=np.array([1, 2, 3, 4, 5, 6]) #  initial k wave number:
-k_wavenumbers=np.array([5]) #  initial k wave number:
+k_wavenumbers=np.array([4]) #  initial k wave number:
 
 lon0 = np.array([180])
 lat0 = np.array([20])
@@ -183,6 +185,10 @@ coslat=np.cos(dtr*lats)
 um=u/coslat[:,None]
 vm=v/coslat[:,None]
 # um checked!!!
+
+for j in range(0,np.size(um,axis=0)) :
+    print lats[j], ym[j],u[j,i],um[j,i]
+
 
 # Create a VectorWind instance to handle the computations.
 uwnd, uwnd_info = prep_data(uwnd, 'tyx')
@@ -455,7 +461,7 @@ def lt(k,fr,um,vg,l,BetaM,ydel) :
      K_lt = np.empty(2)
      K_lt[:] = np.nan
      Ky_lt = np.zeros_like(K_lt)
-     if all(BetaM >= 0) and all(um > 0) :
+     if all(BetaM >= 0) and all(um-fr/k > 0) :
          for i in range(2) :
              K_lt[i] = Kt(k,um[i],fr,BetaM[i])
          print K_lt
@@ -481,13 +487,10 @@ def rk(x,y,k,l,fr):
     #dldt:
     y1=y
     y2=y+yt*dt
-    # print ' y1=',y1
-    # print ' y2=',y2
+    print ' x=',x,' y=',y1, ' u(x,y)=',uint(x,y1), ' um(x,y)=',umint(x,y1)
+    print ' x=',x,' y=',y2, ' u(x,y)=',uint(x,y2), ' um(x,y)=',umint(x,y1)
     yrange = np.linspace(y1,y2,num=2)
-    #yrange = np.array([y1,y2])
-    # dldt=lt(umint(x,yrange),yt,l,BetaMint(x,yrange),y2-y1)
     dldt=lt(k,fr,np.array([umint(x,y1),umint(x,y2)]),yt,l,np.array([BetaMint(x,y1),BetaMint(x,y2)]),y2-y1)
-    # print ' dldt=',dldt
     return xt,yt,dkdt,dldt
 
 
@@ -545,7 +548,7 @@ for iloc in loc :
 
             linit = np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk
             if linit >= 0 :
-                linit = np.sqrt(np.square(Kt(spotk,um[j,i],fr,BetaM[j,i]))-spotk*spotk)
+                linit = np.sqrt(linit)
             else:
                 linit = np.nan
             lroot = np.array([linit,-linit])

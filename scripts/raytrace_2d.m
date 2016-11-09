@@ -12,6 +12,8 @@ close all; clear all
 
 addpath matlab matlab/spherepack
 
+k=1
+
 rad     = 6.371e6  ; % radius of sphere having same volume as Earth (m)
 e_omega = 7.292e-5 ; % rotation rate of Earth (rad/s)
 dtr     = pi/180   ;
