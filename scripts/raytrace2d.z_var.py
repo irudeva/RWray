@@ -132,7 +132,7 @@ dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
 
 nt=np.array([0 for i in range(time.size)])
 i =0
-for yr in range(1980,1983) :
+for yr in range(1980,2011) :
     for m in [12, 1, 2] :
         yr1 = yr
         if m == 12:
@@ -303,7 +303,7 @@ BetaM = BetaM_np
 #---NetCDF write---------------------------------------------------------------
 print("Start NetCDF writing")
 
-varlist = np.zeros(15, dtype = {'names': ['name', 'outname', 'data', 'scale'],
+varlist = np.zeros(16, dtype = {'names': ['name', 'outname', 'data', 'scale'],
                                 'formats': ['a5', 'a5', '(241,480)f4', 'f4']} )
 
 
@@ -322,6 +322,7 @@ varlist[11] = ("qxx","qxx",qxx,1.e-18)
 varlist[12] = ("qyy","qyy",qyy,1.e-18)
 varlist[13] = ("qxy","qxy",qxy,1.e-18)
 varlist[14] = ("BetaM","BetaM",BetaM,1.e-11)
+varlist[15] = ("sf","psi",psi,1.e+8)
 
 
 #Arr= [("u",100),("v",200)]
@@ -394,6 +395,7 @@ for iv in range(varlist['name'].size) :
 
     ncout.close()
 nc.close()
+quit()
 
 ##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"

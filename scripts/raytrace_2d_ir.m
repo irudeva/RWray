@@ -38,8 +38,8 @@ Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
 
-lon0 = [30 90]  ; %deg.E
-lat0 = [30 5 ] ; %deg.N
+lon0 = [120 30 90]  ; %deg.E
+lat0 = [50 30 5 ] ; %deg.N
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
@@ -148,7 +148,7 @@ date = datestr(double(time/24) + TIMEbase); % where time is hours from Timebase
 formatdata = '01-%s-%d';
 mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
 in=1;
-for yr = 1980:1982
+for yr = 1980:2010
     for imon = 1:3
       nyr = yr;
       if(mon(imon,:)=='Dec'); nyr=yr-1; end
@@ -399,7 +399,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for iloc=1:1 %size(lon0,2)
+for iloc=2:2 %size(lon0,2)
 
     [tmp,i0] = min(abs(lon-lon0(iloc)));
     [tmp,j0] = min(abs(lat-lat0(iloc)));
@@ -424,7 +424,7 @@ for iloc=1:1 %size(lon0,2)
     
     %%%%  Estimating the initial Ks from the forcing site
   
-    for iomega=3:Nfr
+    for iomega=1:Nfr
      omega=freq(iomega);
      period=round((2*pi/omega)/day);
      

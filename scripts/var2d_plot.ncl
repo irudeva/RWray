@@ -5,8 +5,8 @@ begin
 
  nvar = (/"u","v","um","vm","umx","umy","vmx","vmy","q","qx","qy","qxx","qyy","qxy","BetaM"/)
 ; do iv=0,dimsizes(nvar)-1
- do iv=13,13
-  a = addfile("../output/test/test."+nvar(iv)+".nc","r")
+ do iv=1,1
+  a = addfile("../output/zon_var/test."+nvar(iv)+".nc","r")
   ;************************************************
   if(any((/"u","v"/).eq.nvar(iv))) then
     lev = (/-60, 60, 5/)
@@ -37,7 +37,7 @@ begin
   ;************************************************
   ; create default plot
   ;************************************************
-    wks = gsn_open_wks("png","../output/test/test."+nvar(iv))                  ; send graphics to PNG file
+    wks = gsn_open_wks("png","../output/zon_var/test."+nvar(iv))                  ; send graphics to PNG file
 
     res = True
     res@mpMinLatF            = -90      ; range to zoom in on
