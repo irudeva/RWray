@@ -18,7 +18,7 @@ dtr     = pi/180   ;
 rtd     = 180/pi   ;
 
 %% specify the number of points at the north/south pole to remove from analysis
-j_pole=4;
+j_pole=5;
 
 
 
@@ -28,12 +28,13 @@ integration_time=10*day;
 Nsteps = round(integration_time/dt);
 
 % Periods ('Inf' for quasi-stationary waves) 
-Periods=[ Inf 50 20 ]*day;
+%Periods=[ Inf 50 20 ]*day;
+Periods=[ 20 ]*day;
 freq=2*pi./Periods;
 Nfr=length(freq);
 
 % Initial k wave number:
-k_wavenumbers=[6];
+k_wavenumbers=[3];
 Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
