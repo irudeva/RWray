@@ -18,7 +18,7 @@ dtr     = pi/180   ;
 rtd     = 180/pi   ;
 
 %% specify the number of points at the north/south pole to remove from analysis
-j_pole=4;
+j_pole=5;
 
 
 
@@ -28,12 +28,13 @@ integration_time=10*day;
 Nsteps = round(integration_time/dt);
 
 % Periods ('Inf' for quasi-stationary waves) 
-Periods=[ Inf 50 20 ]*day;
+%Periods=[ Inf 50 20 ]*day;
+Periods=[ Inf ]*day;
 freq=2*pi./Periods;
 Nfr=length(freq);
 
 % Initial k wave number:
-k_wavenumbers=[6];
+k_wavenumbers=[3];
 Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
@@ -218,8 +219,8 @@ end
 
 UbarM=u0./cos(Lat);
 VbarM=v0./cos(Lat);
-PsiM=psi0;
-%PsiM=psi0./cos(Lat);
+%while testing only PsiM=psi0;
+PsiM=psi0./cos(Lat);
 
 UbarM(Y==90)=inf; % was using 1e10 with success here
 UbarM(Y==-90)=-inf;
@@ -329,7 +330,7 @@ for j=jmin:jmax
 end
 
 dqbardy=py1(:,5:nlon+4);
-d2qbardy2=py2(:,5:nlon+4);
+d2qbardy2a=py2(:,5:nlon+4);
 
 %%%%  Alternately for d2qbar/dy2
 
@@ -339,7 +340,7 @@ for j=4:nlat-3
            (mean(ym(j-1:j))-mean(ym(j:j+1)));
 end
 
-d2qbardy2a=py2;
+d2qbardy2=py2;
 
 %% A debugging text for the calculation of d^2 qbar/dy^2:
 % sum(sum(d2qbardy2(6:68,6:138)-d2qbardy2a(6:68,6:138)))
@@ -460,7 +461,7 @@ for iloc=2:2 %size(lon0,2)
       %qxint
       %qyint
         
-      for RR=1:3
+      for RR=1:3  
         spotl=tl(RR);
         Ks=(spotl^2+spotk^2)^0.5;
  
