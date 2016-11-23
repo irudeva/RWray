@@ -30,6 +30,8 @@ Nsteps = round(integration_time/dt);
 % Periods ('Inf' for quasi-stationary waves) 
 %Periods=[ Inf 50 20 ]*day;
 Periods=[ Inf ]*day;
+
+>>>>>>> ff30e04fae4e44b9c29872104947b7c8ccb3da7f
 freq=2*pi./Periods;
 Nfr=length(freq);
 
