@@ -221,8 +221,8 @@ end
 
 UbarM=u0./cos(Lat);
 VbarM=v0./cos(Lat);
-%while testing only PsiM=psi0;
-PsiM=psi0./cos(Lat);
+PsiM=psi0;
+%PsiM=psi0./cos(Lat);
 
 UbarM(Y==90)=inf; % was using 1e10 with success here
 UbarM(Y==-90)=-inf;
@@ -332,7 +332,7 @@ for j=jmin:jmax
 end
 
 dqbardy=py1(:,5:nlon+4);
-d2qbardy2a=py2(:,5:nlon+4);
+d2qbardy2=py2(:,5:nlon+4);
 
 %%%%  Alternately for d2qbar/dy2
 
@@ -342,7 +342,7 @@ for j=4:nlat-3
            (mean(ym(j-1:j))-mean(ym(j:j+1)));
 end
 
-d2qbardy2=py2;
+d2qbardy2a=py2;
 
 %% A debugging text for the calculation of d^2 qbar/dy^2:
 % sum(sum(d2qbardy2(6:68,6:138)-d2qbardy2a(6:68,6:138)))
