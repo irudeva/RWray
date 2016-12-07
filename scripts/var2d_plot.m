@@ -3,16 +3,16 @@ yplot=90:-.75:-90;
 [XPLOT,YPLOT]=meshgrid(xplot,yplot(3:239));
 [XPLOT1,YPLOT1]=meshgrid(xplot,yplot(4:238));
 
-fig1=contour(XPLOT,YPLOT,BetaM(3:239,:));
-title('BetaM')
+%fig1=contour(XPLOT,YPLOT,BetaM(3:239,:));
+%title('BetaM')
+
+%figure;
+%fig2=contour(XPLOT1,YPLOT1,dqbardx(4:238,:));
+%title('qbardx')
 
 figure;
-fig2=contour(XPLOT1,YPLOT1,dqbardx(4:238,:));
-title('qbardx')
-
-figure;
-fig3=contour(XPLOT1,YPLOT1,dqbardy(4:238,:));
-title('qbardy')
+fig3=contour(XPLOT1,YPLOT1,qbar(4:238,:));
+title('qbar')
 
 %v=[-1:0.5:1];
 %v=v*1.e-14;

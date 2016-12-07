@@ -3,6 +3,7 @@ sources/
 output/
 scripts/matlab/spherepack
 scripts/tmp*
+scripts/old
 
 *.mat
 *.swp

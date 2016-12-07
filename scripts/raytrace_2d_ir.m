@@ -20,7 +20,12 @@ rtd     = 180/pi   ;
 %% specify the number of points at the north/south pole to remove from analysis
 j_pole=5;
 
-
+bgf = 'DJF' % it depends on the input background fields
+if bgf=='DJF'
+ mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
+elseif bgf=='JJA'
+ mon=[ 'Jun';'Jul';'Aug' ];  %%%!!!! for DEC -  year = year-1!!!
+end
 
 day = 24*60*60; % in s
 dt  = 15*60;  % in s
@@ -31,18 +36,17 @@ Nsteps = round(integration_time/dt);
 %Periods=[ Inf 50 20 ]*day;
 Periods=[ Inf ]*day;
 
->>>>>>> ff30e04fae4e44b9c29872104947b7c8ccb3da7f
 freq=2*pi./Periods;
 Nfr=length(freq);
 
 % Initial k wave number:
-k_wavenumbers=[3];
+k_wavenumbers=[1 3 5];
 Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
 
-lon0 = [120 30 90]  ; %deg.E
-lat0 = [50 30 5 ] ; %deg.N
+lon0 = [240 30 90]  ; %deg.E
+lat0 = [40 30 5 ] ; %deg.N
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
@@ -149,7 +153,7 @@ TIMEbase = datenum(1900, 1, 1);
 date = datestr(double(time/24) + TIMEbase); % where time is hours from Timebase
 
 formatdata = '01-%s-%d';
-mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
+%mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
 in=1;
 for yr = 1980:2010
     for imon = 1:3
@@ -201,9 +205,11 @@ ym(lat==-90)=-inf;
 
 %  Smoothing the fields if do_smooth_background_fields=1
 if do_smooth_background_fields
-   u0=zfltr(u0,1,10,1);
-   v0=zfltr(v0,1,10,1);
-   psi0=zfltr(psi0,1,10,1);
+    %test
+   %u0=zfltr(u0,1,10,1);
+   %v0=zfltr(v0,1,10,1);
+   %psi0=zfltr(psi0,1,10,1);
+   %end test
   %u00=smooth(u0,'loess');
   %u01=reshape(u00,nlat,nlon);
   %v00=smooth(v0,'loess');
@@ -332,9 +338,9 @@ for j=jmin:jmax
 end
 
 dqbardy=py1(:,5:nlon+4);
-d2qbardy2=py2(:,5:nlon+4);
+d2qbardy2a=py2(:,5:nlon+4);
 
-%%%%  Alternately for d2qbar/dy2
+%%%%  Alternately for d2qbar/dy2, arguable 'better'
 
 py2=NaN*ones(nlat,nlon);
 for j=4:nlat-3
@@ -342,7 +348,7 @@ for j=4:nlat-3
            (mean(ym(j-1:j))-mean(ym(j:j+1)));
 end
 
-d2qbardy2a=py2;
+d2qbardy2=py2;
 
 %% A debugging text for the calculation of d^2 qbar/dy^2:
 % sum(sum(d2qbardy2(6:68,6:138)-d2qbardy2a(6:68,6:138)))
@@ -402,7 +408,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for iloc=2:2 %size(lon0,2)
+for iloc=1:1 %size(lon0,2)
 
     [tmp,i0] = min(abs(lon-lon0(iloc)));
     [tmp,j0] = min(abs(lat-lat0(iloc)));
@@ -464,6 +470,8 @@ for iloc=2:2 %size(lon0,2)
       %qyint
         
       for RR=1:3  
+        spotk=kk/rad/cos(Lat(j0,i0));
+        yi=ym(j0);xi=xm(i0);
         spotl=tl(RR);
         Ks=(spotl^2+spotk^2)^0.5;
  
@@ -588,8 +596,8 @@ for iloc=2:2 %size(lon0,2)
             alL(2*t*dt/day,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
           end
          end
-         fn_out = sprintf('../output/matlab/ray_lat%dN__lon%dN_period%d_k%d_root%d',...
-                         lat0(iloc),lon0(iloc),period,kk,RR);
+         fn_out = sprintf('../output/matlab/ray_%s_lat%dN_lon%dE_period%d_k%d_root%d',...
+                         bgf,lat0(iloc),lon0(iloc),period,kk,RR);
          dlmwrite(fn_out, alL,'precision', '%.6f');
             
       end

@@ -4,22 +4,24 @@
 
 begin
 
-npts = 31
+npts = 20
 col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-lon = (/"210","180","120"/)
-lat = (/"25","20","50"/)
+bgs="DJF"
+
+lon = (/"240","0"/)
+lat = (/"40","30"/)
+print(lon+" "+lat)
   do loc  = 0,0
-   do root = 0,1
+   do root = 1,3
     ;period = (/"-60","60","-30","30","Inf"/)
-    period = (/"_inf","-14","14"/)
-    ;period = (/"_inf"/)
-    ;period = (/"-14"/)
+    ;period = (/"_inf","50","20"/)
+    period = (/"Inf"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
-     fout = "../output/zon_var/ray_zv_v0_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
+     fout = "../output/matlab/ray_"+bgs+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
 
 ; ***  Plotting  *******************************************************************
   wks  = gsn_open_wks("png",fout)
@@ -41,24 +43,8 @@ lat = (/"25","20","50"/)
 
 
   res@mpGreatCircleLinesOn = False
-  ;*** add u-field as a background *************************************************
 
-  a = addfile("../output/zon_var/test/test.u.nc","r")
-  var = a->u
-  lev = (/-60, 60, 10/)
-
-  res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = lev(0)			; set the minimum contour level
-  res@cnMaxLevelValF  = lev(1)			; set the maximum contour level
-  res@cnLevelSpacingF = lev(2)			; set the interval between contours
-  res@lbLabelStride   = 2
-  res@cnLineLabelInterval = 5
-
-  plot = gsn_csm_contour_map(wks,var(1:240,:),res)         ; create a default plot
-  ;********************************************************************************
-
-  ;*** Plot empty plot *****
-  ;plot = gsn_csm_map_ce(wks,res)
+  plot = gsn_csm_map_ce(wks,res)
 
   ; resources for polylines
   pres = True
@@ -88,16 +74,15 @@ lat = (/"25","20","50"/)
      do k    = 1,6
      print("k="+k)
 
-      fin = "../output/zon_var/raypath_zv_v0_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(loc)+"N_lon"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
-       ray = asciiread (fin,(/npts,29/),"float")
+       ray = asciiread (fin,(/npts,11/),"float")
        raylon = ray(:,5)
        raylat = ray(:,6)
-
        print(raylon)
        print(raylat)
-
 
        ; gcdist = gc_latlon(lat1,lon1, lat2,lon2, npts,2)
        ; print (gcdist@gclat+"  "+gcdist@gclon )
@@ -115,7 +100,7 @@ lat = (/"25","20","50"/)
        lres@gsMarkerColor  = col(k-1)
        gsn_polymarker_ndc(wks,xleg(k-1),yleg(k-1),lres)
        gsn_text_ndc      (wks,"k"+k,xtxt(k-1),ytxt(k-1),txres)
-       ;;draw(plot)
+       draw(plot)
        ;frame(wks)
        delete(ray)
        delete(raylon)
@@ -131,10 +116,7 @@ lat = (/"25","20","50"/)
 ; ***  End plotting  ***************************************************************
 
    end do  ; ip
-  ;---Drawing the plot will draw the attached polylines and markers.
-  ; draw(plot)
-  ; frame(wks)
-  end do ; root
+  end do  ;root
  end do  ;loc
 
 end

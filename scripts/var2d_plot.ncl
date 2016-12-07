@@ -5,7 +5,7 @@ begin
 
  nvar = (/"u","v","um","vm","umx","umy","vmx","vmy","q","qx","qy","qxx","qyy","qxy","BetaM"/)
 ; do iv=0,dimsizes(nvar)-1
- do iv=1,1
+ do iv=8,8
   a = addfile("../output/zon_var/test."+nvar(iv)+".nc","r")
   ;************************************************
   if(any((/"u","v"/).eq.nvar(iv))) then

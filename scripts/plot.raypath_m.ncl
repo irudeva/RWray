@@ -2,25 +2,32 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-begin
+print ("smth")
+;begin
 
-npts = 31
+print("kuku")
+
+npts = 10
 col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-file_version="zs_dldt0"
+bgs="DJF"
 
-lon = (/"30","180","120"/)
-lat = (/"30","20","50"/)
-  do loc  = 1,1
-   do root = 0,1
+lon = (/"240","0"/)
+lat = (/"40","30"/)
+;print(lon+" "+lat)
+ do loc  = 1,1
+  print(loc)
+   do root = 0,2
     ;period = (/"-60","60","-30","30","Inf"/)
-    ;period = (/"_inf","-14","14"/)
-    period = (/"-14"/)
+    ;period = (/"_inf","50","20"/)
+    period = (/"_inf"/)
+    print(period)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
-     fout = "../output/zon_symm/ray_"+file_version+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
+     fout = "../output/matlab/ray_"+bgs+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
+     print("fout: "+fout)
 
 ; ***  Plotting  *******************************************************************
   wks  = gsn_open_wks("png",fout)
@@ -73,16 +80,16 @@ lat = (/"30","20","50"/)
      do k    = 1,6
      print("k="+k)
 
-      fin = "../output/zon_symm/raypath_"+file_version+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
-       ray = asciiread (fin,(/npts,29/),"float")
+       ray = asciiread (fin,(/npts,7/),"float")
        raylon = ray(:,5)
        raylat = ray(:,6)
-
        print(raylon)
        print(raylat)
-
+       quit()
 
        ; gcdist = gc_latlon(lat1,lon1, lat2,lon2, npts,2)
        ; print (gcdist@gclat+"  "+gcdist@gclon )
