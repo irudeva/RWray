@@ -213,6 +213,38 @@ q = w.absolutevorticity()
 
 #qbar checked!!!
 
+#----BetaM---------------------------------------------------------------------
+print 'Calculate BetaM'
+
+cos2=coslat*coslat
+
+# dum, cosuy=w.gradient(u*cos2[:,None])
+# dum, cosuyy = w.gradient(cosuy/coslat[:,None])
+#
+# tmp = 2*e_omega *cos2/radius
+# BetaM=tmp[:,None]-cosuyy
+
+#alternative BetaM
+
+# for i in range(0,np.size(um,axis=1)) :
+#  cosuy_np = np.gradient(um[:,i]*cos2,2*pi*radius/360)
+#  cosuyy_np = np.gradient(um[:,i]/cos2,2*pi*radius/360)
+cosuy_np = np.zeros_like(um)
+cosuyy_np = np.zeros_like(um)
+#print dy
+#quit()
+dy = np.gradient(ym)
+cosuy_np[:,0] = np.gradient(um[:,0]*cos2,dy)
+cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
+for j in range(0,np.size(um,axis=0)) :
+    cosuy_np[j,:] = cosuy_np[j,0]
+    cosuyy_np[j,:] = cosuyy_np[j,0]
+
+tmp = 2*e_omega *cos2/radius
+BetaM_np = tmp[:,None]-cosuyy_np
+BetaM = BetaM_np
+
+
 
 print "------------------------------"
 print "gradients"
@@ -244,8 +276,11 @@ for i in range(0,np.size(um,axis=1)) :
     umy[:,i] = np.gradient(um[:,i],dy)
     vmy[:,i] = np.gradient(vm[:,i],dy)
     qy[:,i] = np.gradient(q[:,i],dy)
-    qyy[:,i] = np.gradient(qy[:,i],dy)
+    ###qyy[:,i] = np.gradient(qy[:,i],dy)
+    ###  Alternately for d2qbar/dy2, arguable 'better'
+    qyy[:,i] = np.gradient(BetaM[:,i],dy)
     qxy[:,i] = np.gradient(qx[:,i],dy)
+
 
 # print "  "
 # print "----- q gradients ---------"
@@ -262,35 +297,6 @@ for i in range(0,np.size(um,axis=1)) :
 # qxx, qxy = w.gradient(qx*coslat[:,None])
 # qyx, qyy = w.gradient(qy*coslat[:,None])
 
-#----BetaM---------------------------------------------------------------------
-print 'Calculate BetaM'
-
-cos2=coslat*coslat
-
-# dum, cosuy=w.gradient(u*cos2[:,None])
-# dum, cosuyy = w.gradient(cosuy/coslat[:,None])
-#
-# tmp = 2*e_omega *cos2/radius
-# BetaM=tmp[:,None]-cosuyy
-
-#alternative BetaM
-
-# for i in range(0,np.size(um,axis=1)) :
-#  cosuy_np = np.gradient(um[:,i]*cos2,2*pi*radius/360)
-#  cosuyy_np = np.gradient(um[:,i]/cos2,2*pi*radius/360)
-cosuy_np = np.zeros_like(um)
-cosuyy_np = np.zeros_like(um)
-#print dy
-#quit()
-cosuy_np[:,0] = np.gradient(um[:,0]*cos2,dy)
-cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
-for j in range(0,np.size(um,axis=0)) :
-    cosuy_np[j,:] = cosuy_np[j,0]
-    cosuyy_np[j,:] = cosuyy_np[j,0]
-
-tmp = 2*e_omega *cos2/radius
-BetaM_np = tmp[:,None]-cosuyy_np
-BetaM = BetaM_np
 
 
 
@@ -699,20 +705,20 @@ for iloc in loc :
                         latn[tn] = y2lat(yn[tn])
 
                         #testing
-                        print t
-                        print coeff
-                        print um[j,i]*spotk
-                        print vm[j,i]*spotk*spotk,qx[j,i],q[j,i]
-                        print um[j,i]*np.power(spotk,3),qy[j,i]*spotk,fr*spotk*spotk
-                        print k0,l0
-                        print umint(x0,y0),vmint(x0,y0),qint(x0,y0)
-                        print qxint(x0,y0),qyint(x0,y0)
-                        print x0,y0
-                        print 'qx', qx.shape
-                        print qx[10,:]
-                        print 'q', q.shape
-                        print q[10,:]
-                        quit()
+                        # print t
+                        # print coeff
+                        # print um[j,i]*spotk
+                        # print vm[j,i]*spotk*spotk,qx[j,i],q[j,i]
+                        # print um[j,i]*np.power(spotk,3),qy[j,i]*spotk,fr*spotk*spotk
+                        # print k0,l0
+                        # print umint(x0,y0),vmint(x0,y0),qint(x0,y0)
+                        # print qxint(x0,y0),qyint(x0,y0)
+                        # print x0,y0
+                        # print 'qx', qx.shape
+                        # print qx[10,:]
+                        # print 'q', q.shape
+                        # print q[10,:]
+                        # quit()
 
 
                     if fr==0 :

@@ -443,7 +443,7 @@ for iloc=1:1 %size(lon0,2)
       kk=k_wavenumbers(kkr);
       fprintf('Ray tracing... period=%d, k=%d, ilocation=%d\n' ...
               ,period,kk,iloc)
-      spotk=kk/rad/cos(Lat(j0,i0));
+      spotk0=kk/rad/cos(Lat(j0,i0));
       %subk=[ilocation kk RR];
       yi=ym(j0);xi=xm(i0);
       %%  Ks=sqrt(abs(sBetaM(fry,frx)/sUbarM(fry,frx)));
@@ -457,9 +457,9 @@ for iloc=1:1 %size(lon0,2)
         
       %% Eli: added omega terms here for the non zero frequency case:
       cz(1)=Vint;
-      cz(2)=Uint*spotk-omega;
-      cz(3)=Vint*spotk^2+qxint;
-      cz(4)=Uint*spotk^3-qyint*spotk-omega*spotk^2;
+      cz(2)=Uint*spotk0-omega;
+      cz(3)=Vint*spotk0^2+qxint;
+      cz(4)=Uint*spotk0^3-qyint*spotk0-omega*spotk0^2;
       tl=roots(cz);
       %tl*rad
       %Vint
@@ -470,9 +470,10 @@ for iloc=1:1 %size(lon0,2)
       %qyint
         
       for RR=1:3  
-        spotk=kk/rad/cos(Lat(j0,i0));
+        spotk=spotk0;
         yi=ym(j0);xi=xm(i0);
-        spotl=tl(RR);
+        spotl0=tl(RR);
+        spotl=spotl0;
         Ks=(spotl^2+spotk^2)^0.5;
  
         fprintf('Ray tracing... period=%d, k=%d, root=%d, l=%d, ilocation=%d\n' ...
@@ -590,10 +591,15 @@ for iloc=1:1 %size(lon0,2)
           %rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
           %isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
         end
+        
+        %writing out
+         %the initial posistion and wavenumbers
+        alL(1,:)=[0 0. 0. xm(i0) ym(j0) lon(i0) lat(j0) real(kk) real(spotl0)*rad imag(kk) imag(spotl0)*rad];
         for t = 1:Nsteps
-          if rem(t,day/(2*dt))==0
+          if t==1
+           elseif rem(t,day/(2*dt))==0
               %disp([time, locm, locgeo, rwnums, iwnums])
-            alL(2*t*dt/day,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
+            alL(2*t*dt/day+1,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
           end
          end
          fn_out = sprintf('../output/matlab/ray_%s_lat%dN_lon%dE_period%d_k%d_root%d',...

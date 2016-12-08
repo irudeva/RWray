@@ -4,7 +4,7 @@
 
 begin
 
-npts = 10
+npts = 20
 col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
