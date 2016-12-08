@@ -68,7 +68,7 @@ ncid = netcdf.open('../output/zon_var/test.psi.nc');
 psi=netcdf.getVar(ncid,2);
   scale = netcdf.getAtt(ncid,2,'scale_factor');
   offset= netcdf.getAtt(ncid,2,'add_offset');
-  %psi = single(psi)*scale+offset;
+  psi = single(psi)*scale+offset;
 psi=psi';
 
 x=transpose(X); 
