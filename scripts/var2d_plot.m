@@ -10,9 +10,13 @@ yplot=90:-.75:-90;
 %fig2=contour(XPLOT1,YPLOT1,dqbardx(4:238,:));
 %title('qbardx')
 
+%figure;
+%fig3=contour(XPLOT1,YPLOT1,qbar(4:238,:));
+%title('qbar')
+
 figure;
-fig3=contour(XPLOT1,YPLOT1,qbar(4:238,:));
-title('qbar')
+fig=contour(XPLOT1,YPLOT1,u0(4:238,:));
+title('u JJA')
 
 %v=[-1:0.5:1];
 %v=v*1.e-14;

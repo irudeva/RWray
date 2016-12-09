@@ -11,10 +11,15 @@ dum2 = dum1
 
 bgs="DJF"
 
-lon = (/"240","0"/)
-lat = (/"40","30"/)
-print(lon+" "+lat)
-  do loc  = 0,0
+;lon = (/"240","0"/)
+;lat = (/"40","30"/)
+;print(lon+" "+lat)
+lat = -ispan(-80,80,10)
+print(lat)
+lon = lat*0+150
+print (lon)
+
+  do loc  = 0,dimsizes(lat)-1
    do root = 1,3
     ;period = (/"-60","60","-30","30","Inf"/)
     ;period = (/"_inf","50","20"/)

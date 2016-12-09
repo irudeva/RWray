@@ -20,7 +20,7 @@ rtd     = 180/pi   ;
 %% specify the number of points at the north/south pole to remove from analysis
 j_pole=5;
 
-bgf = 'DJF' % it depends on the input background fields
+bgf = ['JJA'] % it depends on the input background fields
 if bgf=='DJF'
  mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
 elseif bgf=='JJA'
@@ -40,13 +40,16 @@ freq=2*pi./Periods;
 Nfr=length(freq);
 
 % Initial k wave number:
-k_wavenumbers=[1 3 5];
+k_wavenumbers=[1 2 3 4 5 6];
 Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
 
-lon0 = [240 30 90]  ; %deg.E
-lat0 = [40 30 5 ] ; %deg.N
+%lon0 = [150 150]  ; %deg.E
+%lat0 = [ 90:-90:10 ] ; %deg.N
+lat0 = [80:-10:-80] ; %deg.N
+lon0 = 150.*ones(size(lat0))
+
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
@@ -408,7 +411,7 @@ dVbarMdy=py1(:,2:nlon+1);
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
 
-for iloc=1:1 %size(lon0,2)
+for iloc=1:size(lon0,2)
 
     [tmp,i0] = min(abs(lon-lon0(iloc)));
     [tmp,j0] = min(abs(lat-lat0(iloc)));
@@ -602,7 +605,7 @@ for iloc=1:1 %size(lon0,2)
             alL(2*t*dt/day+1,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
           end
          end
-         fn_out = sprintf('../output/matlab/ray_%s_lat%dN_lon%dE_period%d_k%d_root%d',...
+         fn_out = sprintf('../output/matlab/ray_%s_%dN_%dE_period%d_k%d_root%d',...
                          bgf,lat0(iloc),lon0(iloc),period,kk,RR);
          dlmwrite(fn_out, alL,'precision', '%.6f');
             
