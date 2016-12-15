@@ -5,9 +5,10 @@ begin
 
  nvar = (/"Ks"/)
  ssn = (/"JJA", "DJF"/)
+do yr =1980,1980
 do is=0,dimsizes(ssn)-1
  do iv=0,0
-  a = addfile("../output/Ks/"+nvar(iv)+"."+ssn(is)+".erain.nc","r")
+  a = addfile("../output/Ks/"+nvar(iv)+"."+ssn(is)+yr+".erain.nc","r")
   ;************************************************
   if(any((/"Ks"/).eq.nvar(iv))) then
     lev = (/-20, 20, 2/)
@@ -25,7 +26,7 @@ do is=0,dimsizes(ssn)-1
   ;************************************************
   ; create default plot
   ;************************************************
-    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"_bw."+ssn(is)+".erain")                  ; send graphics to PNG file
+    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"_bw."+ssn(is)+yr+".erain")                  ; send graphics to PNG file
 
     res = True
     res@mpMinLatF            = -90      ; range to zoom in on
@@ -54,6 +55,7 @@ do is=0,dimsizes(ssn)-1
     plot = gsn_csm_contour_map(wks,var(5:236,:),res)         ; create a default plot
     print("end plotting")
 
+end do
 end do
 end do
 end
