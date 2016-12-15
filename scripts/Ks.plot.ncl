@@ -4,10 +4,10 @@ begin
 ;************************************************
 
  nvar = (/"Ks"/)
- ssn = (/"Sep"/)
-; do iv=0,dimsizes(nvar)-1
+ ssn = (/"JJA", "DJF"/)
+do is=0,dimsizes(ssn)-1
  do iv=0,0
-  a = addfile("../output/Ks/"+nvar(iv)+"."+ssn+".erain.nc","r")
+  a = addfile("../output/Ks/"+nvar(iv)+"."+ssn(is)+".erain.nc","r")
   ;************************************************
   if(any((/"Ks"/).eq.nvar(iv))) then
     lev = (/-20, 20, 2/)
@@ -25,7 +25,7 @@ begin
   ;************************************************
   ; create default plot
   ;************************************************
-    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"."+ssn+".erain")                  ; send graphics to PNG file
+    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"_bw."+ssn(is)+".erain")                  ; send graphics to PNG file
 
     res = True
     res@mpMinLatF            = -90      ; range to zoom in on
@@ -34,7 +34,7 @@ begin
     res@mpMaxLonF            = 360.
     res@mpCenterLonF         = 180.
 
-    res@cnFillOn             = True                  ; turn on color fill
+    res@cnFillOn             = False                  ; turn on color fill
     res@cnFillPalette        = "BlWhRe"              ; choose colormap
 
 
@@ -42,6 +42,8 @@ begin
     res@cnMinLevelValF  = lev(0)			; set the minimum contour level
     res@cnMaxLevelValF  = lev(1)			; set the maximum contour level
     res@cnLevelSpacingF = lev(2)			; set the interval between contours
+
+    ;res@cnSmoothingOn = True
 
     res@lbLabelStride         = 2
 
@@ -52,5 +54,6 @@ begin
     plot = gsn_csm_contour_map(wks,var(5:236,:),res)         ; create a default plot
     print("end plotting")
 
+end do
 end do
 end

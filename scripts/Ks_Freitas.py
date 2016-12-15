@@ -62,7 +62,7 @@ for ssn in bgs :
         bgmon = np.array([9])
 
 
-    fout = "../output/Ks/Ks.{:s}.erain.nc".format(ssn)
+    fout = "../output/Ks/Ks_Fr1.{:s}.erain.nc".format(ssn)
 
     #----time average---------------------------------------------------------------------
     print 'Take u,v average'
@@ -131,14 +131,19 @@ for ssn in bgs :
     cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
 
     dlat = np.gradient(lats)
+    print dy
+    print dlat*radius/coslat
+    quit()
     for i,count in enumerate(um[0,:]) :
-        cosulat_np[:,i] = np.gradient(um[:,i]*cos2,dy)
-        cosulat2_np[:,i] = np.gradient(cosulat_np[:,i]/cos2,dy)
+        cosulat_np[:,i] = np.gradient(um[:,i]*cos2,dlat)
+        cosulat2_np[:,i] = np.gradient(cosulat_np[:,i],dlat)
 
 
-    tmp = 2*e_omega *cos2/radius
+    # tmp = 2*e_omega *cos2/radius
+    tmp = radius * 2*e_omega *cos2
     BetaM_np = tmp[:,None]-cosulat2_np
     BetaM = BetaM_np
+    #BetaM = BetaM_np + cosulat2_np*radius*radius
 
     Ks = np.sqrt(BetaM/um)
 
@@ -185,7 +190,7 @@ for ssn in bgs :
 
     #!!!automatically takes scale and offset into account
     #!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
-    ncout_Ks[:] = Ks*radius
+    ncout_Ks[:] = Ks
     ncout_um[:] = um
     ncout_BetaM[:] = BetaM
 
