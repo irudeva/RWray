@@ -14,19 +14,22 @@ bgs="DJF"
 ;lon = (/"240","0"/)
 ;lat = (/"40","30"/)
 ;print(lon+" "+lat)
-lat = -ispan(-80,80,10)
-print(lat)
-lon = lat*0+150
-print (lon)
+;lat = -ispan(-80,80,10)
+;lon = lat*0+150
+lat = ispan(65,75,10)
+lon = ispan(0,330,30)
 
-  do loc  = 0,dimsizes(lat)-1
+
+  do ilat  = 0,dimsizes(lat)-1
+  do ilon  = 0,dimsizes(lon)-1
+
    do root = 1,3
     ;period = (/"-60","60","-30","30","Inf"/)
     ;period = (/"_inf","50","20"/)
     period = (/"Inf"/)
     do ip    = 0, dimsizes(period)-1
      p = period(ip)
-     fout = "../output/matlab/ray_"+bgs+"_loc"+lat(loc)+"N_"+lon(loc)+"E"+"_period"+p+"_root"+root
+     fout = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_root"+root
 
 ; ***  Plotting  *******************************************************************
   wks  = gsn_open_wks("png",fout)
@@ -43,7 +46,7 @@ print (lon)
 
   res@tiMainString       = "Ray Path"
   res@tiMainFontHeightF  = 0.013
-  res@gsnCenterString    = "("+lat(loc)+"N; "+lon(loc)+"E)      period = "+p+"days     root = "+root
+  res@gsnCenterString    = "("+lat(ilat)+"N; "+lon(ilon)+"E)      period = "+p+"days     root = "+root
   res@gsnCenterStringFontHeightF = 0.008
 
 
@@ -79,7 +82,7 @@ print (lon)
      do k    = 1,6
      print("k="+k)
 
-      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(loc)+"N_lon"+lon(loc)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
@@ -122,6 +125,7 @@ print (lon)
 
    end do  ; ip
   end do  ;root
- end do  ;loc
+ end do  ;lon
+ end do  ;lat
 
 end

@@ -45,11 +45,12 @@ Nk = length(k_wavenumbers);
 
 % Starting point of ray (location)
 
-%lon0 = [150 150]  ; %deg.E
 %lat0 = [ 90:-90:10 ] ; %deg.N
-lat0 = [80:-10:-80] ; %deg.N
-lon0 = 150.*ones(size(lat0))
+%lat0 = [80:-10:-80] ; %deg.N
+%lon0 = 150.*ones(size(lat0)) ; deg E
 
+lat0 = [80:-5:60] ; %deg.N
+lon0 = [0:30:330] ; %deg E
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
@@ -410,11 +411,11 @@ dVbarMdy=py1(:,2:nlon+1);
 
 %% Solving for the ray path for different forcing sites (initial
 %% locations of rays):
+for ilat=1:size(lat0,2)
+for ilon=1:size(lon0,2)
 
-for iloc=1:size(lon0,2)
-
-    [tmp,i0] = min(abs(lon-lon0(iloc)));
-    [tmp,j0] = min(abs(lat-lat0(iloc)));
+    [tmp,i0] = min(abs(lon-lon0(ilon)));
+    [tmp,j0] = min(abs(lat-lat0(ilat)));
     
     
     [sxm,sym]=meshgrid(xm,ym(jmin:jmax));
@@ -444,8 +445,8 @@ for iloc=1:size(lon0,2)
     
      for kkr=1:Nk
       kk=k_wavenumbers(kkr);
-      fprintf('Ray tracing... period=%d, k=%d, ilocation=%d\n' ...
-              ,period,kk,iloc)
+      fprintf('Ray tracing... period=%d, k=%d, ilocation=(%dE, %dN)\n' ...
+              ,period,kk,lon0(ilon),lat0(ilat))
       spotk0=kk/rad/cos(Lat(j0,i0));
       %subk=[ilocation kk RR];
       yi=ym(j0);xi=xm(i0);
@@ -479,8 +480,8 @@ for iloc=1:size(lon0,2)
         spotl=spotl0;
         Ks=(spotl^2+spotk^2)^0.5;
  
-        fprintf('Ray tracing... period=%d, k=%d, root=%d, l=%d, ilocation=%d\n' ...
-                ,period,kk,RR,spotl*rad,iloc);
+        fprintf('Ray tracing... period=%d, k=%d, root=%d, l=%d, ilocation=%dE %dN\n' ...
+                ,period,kk,RR,spotl*rad,lon0(ilon),lat0(ilat));
 
         %if do_only_northern_hisphere_rays
           %%  If only interested in rays that go northward, break the
@@ -503,8 +504,8 @@ for iloc=1:size(lon0,2)
           tstl2=imag(spotl)*rad*cos(Lat(j,1));
           if tstl2~=0
             fprintf('*** found complex initial l, not tracing. \n')
-            fprintf('    [tstl2 ilocation kk omega RR]=[%g,%g,%g,%g,%g]\n' ...
-                    ,tstl2,iloc,kk,omega,RR)
+            fprintf('    [tstl2 ilocation kk omega RR]=[%g,(%gE,%gN),%g,%g,%g]\n' ...
+                    ,tstl2,lon0(ilon),lat0(ilat),kk,omega,RR)
             continue
           end
         end
@@ -606,12 +607,13 @@ for iloc=1:size(lon0,2)
           end
          end
          fn_out = sprintf('../output/matlab/ray_%s_%dN_%dE_period%d_k%d_root%d',...
-                         bgf,lat0(iloc),lon0(iloc),period,kk,RR);
+                         bgf,lat0(ilat),lon0(ilon),period,kk,RR);
          dlmwrite(fn_out, alL,'precision', '%.6f');
             
       end
      end
     end
+end
 end
 
 
