@@ -5,10 +5,13 @@ begin
 
  nvar = (/"Ks"/)
  ssn = (/"JJA", "DJF"/)
-do yr =1980,1980
+;do yr =1980,1980
+yr1=1980
+yr2=2010
+yrs=yr1+"-"+yr2
 do is=0,dimsizes(ssn)-1
  do iv=0,0
-  a = addfile("../output/Ks/"+nvar(iv)+"."+ssn(is)+yr+".erain.nc","r")
+  a = addfile("../output/Ks/"+nvar(iv)+"_Fr1."+ssn(is)+yrs+".erain.nc","r")
   ;************************************************
   if(any((/"Ks"/).eq.nvar(iv))) then
     lev = (/-20, 20, 2/)
@@ -26,7 +29,7 @@ do is=0,dimsizes(ssn)-1
   ;************************************************
   ; create default plot
   ;************************************************
-    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"_bw."+ssn(is)+yr+".erain")                  ; send graphics to PNG file
+    wks = gsn_open_wks("png","../output/Ks/"+nvar(iv)+"_bw."+ssn(is)+yrs+".erain")                  ; send graphics to PNG file
 
     res = True
     res@mpMinLatF            = -90      ; range to zoom in on
@@ -57,5 +60,5 @@ do is=0,dimsizes(ssn)-1
 
 end do
 end do
-end do
+;end do  %yr
 end
