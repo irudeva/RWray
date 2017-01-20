@@ -16,7 +16,7 @@ bgs="DJF"
 ;print(lon+" "+lat)
 ;lat = -ispan(-80,80,10)
 ;lon = lat*0+150
-lat = ispan(60, 60,10)
+lat = ispan(-60, -60,10)
 lon = ispan(150 ,150,30)
 
 
@@ -43,8 +43,8 @@ lon = ispan(150 ,150,30)
   ;res@vpWidthF = 5.
 
 
-  res@mpMinLatF          = 00    ; range to zoom in on
-  res@mpMaxLatF          = 90
+  res@mpMinLatF          = -90    ; range to zoom in on
+  res@mpMaxLatF          = 0
   res@mpMinLonF          = 0
   res@mpMaxLonF          = 360
 
@@ -86,8 +86,8 @@ lon = ispan(150 ,150,30)
      do k    = 1,6
      print("k="+k)
 
-      fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
-      ;fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      ;fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)

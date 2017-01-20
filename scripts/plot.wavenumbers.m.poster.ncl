@@ -16,8 +16,8 @@ bgs="DJF"
 ;print(lon+" "+lat)
 ;lat = -ispan(-80,80,10)
 ;lon = lat*0+150
-lat = ispan(60,60,10)
-lon = ispan(270,270,30)
+lat = ispan(-60,-60,10)
+lon = ispan(150,150,30)
 
 
   do ilat  = 0,dimsizes(lat)-1
@@ -76,8 +76,8 @@ lon = ispan(270,270,30)
      do k    = 1,6
      print("k="+k)
 
-      fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
-      ;fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      ;fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
@@ -111,7 +111,7 @@ lon = ispan(270,270,30)
       pres@tiXAxisString = rayd@long_name
       pres@tiYAxisString = "k"
 
-      pres@pmLegendDisplayMode    = "Always"            ; turn on legend
+      ;pres@pmLegendDisplayMode    = "Always"            ; turn on legend
       pres@pmLegendSide           = "Top"               ; Change location of
       pres@pmLegendParallelPosF   = .2                  ; move units right
       pres@pmLegendOrthogonalPosF = -1.04                 ; move units down

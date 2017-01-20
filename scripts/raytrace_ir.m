@@ -20,7 +20,7 @@ rtd     = 180/pi   ;
 %% specify the number of points at the north/south pole to remove from analysis
 j_pole=5;
 
-bgf = ['JJA'] % it depends on the input background fields
+bgf = ['DJF'] % it depends on the input background fields
 if bgf=='DJF'
  mon=[ 'Dec';'Jan';'Feb' ];  %%%!!!! for DEC -  year = year-1!!!
 elseif bgf=='JJA'
@@ -49,8 +49,8 @@ Nk = length(k_wavenumbers);
 %lat0 = [80:-10:-80] ; %deg.N
 %lon0 = 150.*ones(size(lat0)) ; deg E
 
-lat0 = [80:-5:60] ; %deg.N
-lon0 = [0:30:330] ; %deg E
+lat0 = [25:-50:-25] ; %deg.N
+lon0 = [20:30:330] ; %deg E
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
