@@ -3,10 +3,12 @@ begin
 ; read in netCDF file
 ;************************************************
 
+ ssn = "DJF"
+ dir = "/users/Irina/work/Conference/AMOS2017/Poster/figs/"
  nvar = (/"u","v","um","vm","umx","umy","vmx","vmy","q","qx","qy","qxx","qyy","qxy","BetaM"/)
 ; do iv=0,dimsizes(nvar)-1
- do iv=8,8
-  a = addfile("../output/zon_var/test."+nvar(iv)+".nc","r")
+ do iv=0,1
+  a = addfile(dir+nvar(iv)+"."+ssn+".nc","r")
   ;************************************************
   if(any((/"u","v"/).eq.nvar(iv))) then
     lev = (/-60, 60, 5/)
@@ -37,7 +39,7 @@ begin
   ;************************************************
   ; create default plot
   ;************************************************
-    wks = gsn_open_wks("png","../output/zon_var/test."+nvar(iv))                  ; send graphics to PNG file
+    wks = gsn_open_wks("png",dir+nvar(iv)+"."+ssn)                  ; send graphics to PNG file
 
     res = True
     res@mpMinLatF            = -90      ; range to zoom in on
@@ -47,6 +49,7 @@ begin
 
     res@cnFillOn             = True                  ; turn on color fill
     res@cnFillPalette        = "BlWhRe"              ; choose colormap
+
 
 
     res@cnLevelSelectionMode = "ManualLevels"	; manually set the contour levels with the following 3 resources
@@ -60,6 +63,7 @@ begin
     printVarSummary(var)
 
     print("plotting")
+    res@gsnRightString = ""
     plot = gsn_csm_contour_map(wks,var(1:240,:),res)         ; create a default plot
     print("end plotting")
 
