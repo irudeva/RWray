@@ -9,15 +9,15 @@ col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-bgs="DJF"
+bgs="JJA"
 
 ;lon = (/"240","0"/)
 ;lat = (/"40","30"/)
 ;print(lon+" "+lat)
 ;lat = -ispan(-80,80,10)
 ;lon = lat*0+150
-lat = ispan(65,75,10)
-lon = ispan(0,330,30)
+lat = ispan(-25,25,50)
+lon = ispan(20,330,30)
 
 
   do ilat  = 0,dimsizes(lat)-1

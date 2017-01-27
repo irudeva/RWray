@@ -9,21 +9,21 @@ col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-bgs="DJF"
+bgs="JJA"
 
 ;lon = (/"240","0"/)
 ;lat = (/"40","30"/)
 ;print(lon+" "+lat)
 ;lat = -ispan(-80,80,10)
 ;lon = lat*0+150
-lat = ispan(-60,-60,10)
-lon = ispan(150,150,30)
+lat = ispan(25,25,10)
+lon = ispan(170,170,30)
 
 
   do ilat  = 0,dimsizes(lat)-1
   do ilon  = 0,dimsizes(lon)-1
 
-   do root = 1,1
+   do root = 3,3
     ;period = (/"-60","60","-30","30","Inf"/)
     ;period = (/"_inf","50","20"/)
     period = (/"Inf"/)
@@ -76,8 +76,8 @@ lon = ispan(150,150,30)
      do k    = 1,6
      print("k="+k)
 
-      ;fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
-      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      ;fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
@@ -111,10 +111,11 @@ lon = ispan(150,150,30)
       pres@tiXAxisString = rayd@long_name
       pres@tiYAxisString = "k"
 
-      ;pres@pmLegendDisplayMode    = "Always"            ; turn on legend
+      pres@pmLegendDisplayMode    = "Always"            ; turn on legend
       pres@pmLegendSide           = "Top"               ; Change location of
       pres@pmLegendParallelPosF   = .2                  ; move units right
-      pres@pmLegendOrthogonalPosF = -1.04                 ; move units down
+      pres@pmLegendOrthogonalPosF = -0.6                 ;
+      ;pres@pmLegendOrthogonalPosF = -1.04                 ; move units down
       pres@pmLegendWidthF         = 0.15                ; Change width and
       pres@pmLegendHeightF        = 0.18                ; height of legend.
       pres@lgPerimOn              = False               ; turn off box around

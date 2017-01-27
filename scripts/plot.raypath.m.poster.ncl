@@ -9,21 +9,21 @@ col = (/"black","red","orange","blue","paleturquoise","green","olivedrab"/)
 dum1 = new(6, graphic)
 dum2 = dum1
 
-bgs="DJF"
+bgs="JJA"
 
 ;lon = (/"240","0"/)
 ;lat = (/"40","30"/)
 ;print(lon+" "+lat)
 ;lat = -ispan(-80,80,10)
 ;lon = lat*0+150
-lat = ispan(-60, -60,10)
+lat = ispan(40, 40,10)
 lon = ispan(150 ,150,30)
 
 
   do ilat  = 0,dimsizes(lat)-1
   do ilon  = 0,dimsizes(lon)-1
 
-   do root = 1,1
+   do root = 3,3
     ;period = (/"-60","60","-30","30","Inf"/)
     ;period = (/"_inf","50","20"/)
     period = (/"Inf"/)
@@ -43,8 +43,8 @@ lon = ispan(150 ,150,30)
   ;res@vpWidthF = 5.
 
 
-  res@mpMinLatF          = -90    ; range to zoom in on
-  res@mpMaxLatF          = 0
+  res@mpMinLatF          = 0    ; range to zoom in on
+  res@mpMaxLatF          = 90
   res@mpMinLonF          = 0
   res@mpMaxLonF          = 360
 
@@ -86,8 +86,8 @@ lon = ispan(150 ,150,30)
      do k    = 1,6
      print("k="+k)
 
-      ;fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
-      fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/ray_"+bgs+"_"+lat(ilat)+"N_"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
+      ;fin = "../output/matlab/ray_"+bgs+"_lat"+lat(ilat)+"N_lon"+lon(ilon)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
       print("Raypath from "+fin)
