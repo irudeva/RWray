@@ -17,6 +17,11 @@ e_omega = 7.292e-5 ; % rotation rate of Earth (rad/s)
 dtr     = pi/180   ;
 rtd     = 180/pi   ;
 
+%New pole
+plat = 10
+plon = 30
+
+
 %% specify the number of points at the north/south pole to remove from analysis
 j_pole=5;
 
@@ -266,6 +271,17 @@ end
 BetaM=trm1-cdy2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Pole Rotation
+
+[nlat, nlon] = polerot(plat, plon,lat,lon);
+nlon = nlon+90
+
+????????? lon
+
+
+
+
+
 
 %%%% GRADIENTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
