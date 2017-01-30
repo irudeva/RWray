@@ -18,8 +18,8 @@ dtr     = pi/180   ;
 rtd     = 180/pi   ;
 
 %New pole
-plat = 10
-plon = 30
+plat = 45
+plon = 10
 
 
 %% specify the number of points at the north/south pole to remove from analysis
@@ -273,15 +273,50 @@ BetaM=trm1-cdy2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pole Rotation
 
-[nlat, nlon] = polerot(plat, plon,lat,lon);
-nlon = nlon+90
+%[nplat, nplon] = rotpole(plat,plon,90,0);
 
-????????? lon
+P_coor = [plon plat];
+
+%%%Reverse rotation:
+%[grid_out_new] = rotated_grid_transform(grid_out, 2, P_coor)
+
+[mlon,mlat]=meshgrid(double(lon),double(lat));
+
+%Creating an Interpolan
+ mlon1d = mlon(:);
+ mlat1d = mlat(:);
+ u01d = double(u0(:));
+ Fu0 = scatteredInterpolant(mlon1d,mlat1d,u01d);
+ 
+ %interpolation without lat 90 lat =>
+ %UbarM at poles?
+
+rlat = zeros(size(mlat),'double');
+rlon = zeros(size(mlon),'double');
+ru0 = zeros(size(u0),'double');
+for j=1:size(lat,1)
+  grid_in   = [mlon(j,:)',mlat(j,:)'];
+ [grid_out] = rotated_grid_transform(grid_in, 2, P_coor);
+  rlon(j,:) = grid_out(:,1);
+  rlat(j,:) = grid_out(:,2);
+  
+  for i= 1:size(lon,1)
+      Frlon = rlon(j,i);
+      if rlon(j,i)<0
+          Frlon = Frlon+360.;
+      end
+      ru0(j,i) = Fu0(Frlon,rlat(j,i));
+  end
+end
+
+%%%%psiM, Ubar, Vbar, BetaM
+
+%%% ROTATE the intial lon0 and lat0!!!!
 
 
-
-
-
+mesh(lon,lat,u0)
+figure
+mesh(lon,lat,ru0)
 
 %%%% GRADIENTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -605,7 +640,7 @@ for ilon=1:size(lon0,2)
           iwnums(t,:)=[imag(spotk)*adj imag(spotl)*rad];
           rw(t,:)=[real(dxdt) real(dydt)];
           iw(t,:)=[imag(dxdt) imag(dydt)];
-          locgeo(t,:)=[Xint Yint];
+          locgeo(t,:)=[Xint Yint];  %%% rotate here!!!
           %wchg(t,:)=[real(dldt)*adj real(dkdt)*adj imag(dldt)*adj imag(dkdt)*adj];
           %omega
           %rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
@@ -622,7 +657,7 @@ for ilon=1:size(lon0,2)
             alL(2*t*dt/day+1,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
           end
          end
-         fn_out = sprintf('../output/matlab/ray_%s_%dN_%dE_period%d_k%d_root%d',...
+         fn_out = sprintf('../output/matlab_rotpole/ray_%s_%dN_%dE_period%d_k%d_root%d',...
                          bgf,lat0(ilat),lon0(ilon),period,kk,RR);
          dlmwrite(fn_out, alL,'precision', '%.6f');
             

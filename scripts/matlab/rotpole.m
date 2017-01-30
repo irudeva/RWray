@@ -15,14 +15,13 @@ function [nlat, nlon]  = rotpole(plat,plon,ilat,ilon)
     plat = (plat-90.)*dtr;
     plon = plon*dtr;
 
-    ilon = ilon*dtr;
-    ilat = ilat*dtr;
+    ilon = ilon.*dtr;
+    ilat = ilat.*dtr;
 
     nlat = zeros('like',ilat);
     nlon = zeros('like',ilon);
     
-
-    for i=1:size(ilon,2)
+    for i=1:size(ilon,1)
     %for index, (lon,lat) in enumerate(zip(ilon, ilat)):
  
         % convert to cartesian coordinates
@@ -57,4 +56,4 @@ function [nlat, nlon]  = rotpole(plat,plon,ilat,ilon)
 
         nlon(i) = atan2(xnn,ynn)*rtd;
         
-     end
+    end
