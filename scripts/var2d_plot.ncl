@@ -3,7 +3,7 @@ begin
 ; read in netCDF file
 ;************************************************
 
- ssn = "DJF"
+ ssn = "JJA"
  dir = "/users/Irina/work/Conference/AMOS2017/Poster/figs/"
  nvar = (/"u","v","um","vm","umx","umy","vmx","vmy","q","qx","qy","qxx","qyy","qxy","BetaM"/)
 ; do iv=0,dimsizes(nvar)-1

@@ -54,7 +54,7 @@ lat0 = np.array([40, 50, 45])
 loc = np.array([0])  # the range of locations used
 
 #background filed - select months
-bgs   = 'DJF'
+bgs   = 'JJA'
 if bgs == 'DJF':
     bgmon = np.array([12, 1, 2])
 elif bgs == 'JJA':
@@ -394,7 +394,7 @@ for iv in range(varlist['name'].size) :
 
     ncout.close()
 nc.close()
-#quit()
+quit()
 
 ##---End NetCDF write---------------------------------------------------------------
 print "All derivatives done"
