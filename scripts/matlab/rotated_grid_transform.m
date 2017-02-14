@@ -43,4 +43,4 @@ lat_new = asin(z_new);
 lon_new = (lon_new*180)/pi; % Convert radians back to degrees
 lat_new = (lat_new*180)/pi;
 
-grid_out = [lon_new lat_new];
+grid_out = [lon_new lat_new];% rot
