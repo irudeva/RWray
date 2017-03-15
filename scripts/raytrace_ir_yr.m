@@ -49,8 +49,10 @@ Nk = length(k_wavenumbers);
 %lat0 = [80:-10:-80] ; %deg.N
 %lon0 = 150.*ones(size(lat0)) ; deg E
 
-lat0 = [80:-5:-80] ; %deg.N
-lon0 = [60:90:360] ; %deg E
+%lat0 = [80:-5:-80] ; %deg.N
+%lon0 = [60:90:360] ; %deg E
+lat0 = [72] ; %deg.N
+lon0 = [40] ; %deg E
 
 % smoothing before ray tracing MIGHT be a good idea...:
 do_smooth_background_fields=1;
@@ -594,23 +596,55 @@ for ilon=1:size(lon0,2)
           locgeo(t,:)=[Xint Yint];
           %wchg(t,:)=[real(dldt)*adj real(dkdt)*adj imag(dldt)*adj imag(dkdt)*adj];
           %omega
-          %rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
-          %isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
+          rsom(t,:)=[real(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
+          isom(t,:)=[imag(Uint*spotk+Vint*spotl+(qxint*spotl-qyint*spotk)/Ks^2)];
+          %wave phase
+          rphase(t,:) = [xi*real(spotk) + yi*real(spotl) - rsom(t,:)*t*dt];
+          rphase1 = rphase(t,:);
+          if rphase1 > 2*pi 
+              while rphase1 > 2*pi
+                  rphase1 = rphase1 - 2*pi;
+              end
+          else if rphase1 < 0
+              while rphase1 < 0
+                  rphase1 = rphase1 + 2*pi;
+              end
+          end
+          end
+          rphase2pi(t,:) = rphase1;
+           
+          
         end
         
         %writing out
          %the initial posistion and wavenumbers
-        alL(1,:)=[0 0. 0. xm(i0) ym(j0) lon(i0) lat(j0) real(kk) real(spotl0)*rad imag(kk) imag(spotl0)*rad];
+        rphase0 = xm(i0)*real(spotk0) + ym(i0)*real(spotl0); % wave phase at t=0
+        rphase10 = rphase1;
+
+        if rphase10 > 2*pi 
+              while rphase10 > 2*pi
+                  rphase10 = rphase10 - 2*pi;
+              end
+        else if rphase10 < 0
+              while rphase1 < 0
+                  rphase10 = rphase10 + 2*pi;
+              end
+        end
+        end
+        rphase02pi = rphase10
+
+        
+        alL(1,:)=[0 0. 0. xm(i0) ym(j0) lon(i0) lat(j0) real(kk) real(spotl0)*rad imag(kk) imag(spotl0)*rad real(omega) imag(omega) rphase0 rphase02pi];
         for t = 1:Nsteps
           if rem(t*dt,0.5*day)==0
             if t<=size(timestep,1)
-                 alL(2*t*dt/day+1,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)];
+                 alL(2*t*dt/day+1,:)=[timestep(t,:) locm(t,:) locgeo(t,:) rwnums(t,:) iwnums(t,:)  rsom(t,:)  isom(t,:) rphase(t,:) rphase2pi(t,:)];
             else
                 break
             end
           end
         end
-        fn_out = sprintf('../output/matlab/yearly/ray_%s%d_%dN_%dE_period%d_k%d_root%d',...
+        fn_out = sprintf('../output/matlab/yearly1/ray_%s%d_%dN_%dE_period%d_k%d_root%d',...
                          bgf,lyr,lat0(ilat),lon0(ilon),period,kk,RR);
         dlmwrite(fn_out, alL,'precision', '%.6f');
             

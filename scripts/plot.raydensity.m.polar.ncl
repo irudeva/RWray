@@ -55,7 +55,7 @@ do ssn = 0,0
    do lat  = 0,dimsizes(lats)-1
    do lon  = 0,dimsizes(lons)-1
     do k =  1, 6
-     fout = "../output/matlab/yearly1/raydens_"+season(ssn)+years(0)+"_"+years(nyr-1)+"_"+lats(lat)+"N_"+lons(lon)+"E"+"_period"+p+"_k"+k
+     fout = "../output/matlab/yearly1/raydensP_"+season(ssn)+years(0)+"_"+years(nyr-1)+"_"+lats(lat)+"N_"+lons(lon)+"E"+"_period"+p+"_k"+k
      rayfreq = 0
      dum = new(dimsizes(roots)*dimsizes(years), graphic)
      mark = dum
@@ -64,14 +64,16 @@ do ssn = 0,0
        wks  = gsn_open_wks("png",fout)
 
        res                    = True
-       res@gsnMaximize        = True         ; make ps, pdf, eps, .. large
+       ;res@gsnMaximize        = True         ; make ps, pdf, eps, .. large
        res@gsnDraw            = False        ; don't draw plot yet
        res@gsnFrame           = False        ; don't advance frame yet
 
        ;pres@vpHeightF= 0.4                    ; change aspect ratio of plot
        ;res@vpWidthF = 5.
 
-       res@mpMinLatF          = 0    ; range to zoom in on
+       res@gsnPolar   = "NH"
+
+       res@mpMinLatF          = 45    ; range to zoom in on
        res@mpMaxLatF          = 90
        res@mpMinLonF          = 0
        res@mpMaxLonF          = 360
@@ -85,7 +87,7 @@ do ssn = 0,0
 
        res@mpGreatCircleLinesOn = False
 
-       plot = gsn_csm_map_ce(wks,res)
+       plot = gsn_csm_map_polar(wks,res)
 
        ; resources for polylines
        pres = True
