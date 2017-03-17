@@ -139,260 +139,263 @@ dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
            for t in time]
 
 nt=np.array([0 for i in range(time.size)])
-i =0
-for yr in range(1980,2011) :
-    for m in bgmon :
-        yr1 = yr
-        if m == 12:
-            yr1 = yr-1
-        for t in dt_time :
-            if t == datetime.date(yr1,m,1):
-                print 'selected time: ', t
-                ind = dt_time.index(t)
-                nt[i] = ind
-                i += 1
+
+for iy in range(1980,2017) :
+    nt = nt*0
+    i =0
+    for yr in range(iy,iy+1) :
+        for m in bgmon :
+            yr1 = yr
+            if m == 12:
+                yr1 = yr-1
+            for t in dt_time :
+                if t == datetime.date(yr1,m,1):
+                    print 'selected time: ', t
+                    ind = dt_time.index(t)
+                    nt[i] = ind
+                    i += 1
+
+    u = np.average(uwnd[nt[nt>0],:,:],axis=0)
+    v = np.average(vwnd[nt[nt>0],:,:],axis=0)
+    psi = np.average(sf[nt[nt>0],:,:],axis=0)
 
 
-u = np.average(uwnd[nt[nt>0],:,:],axis=0)
-v = np.average(vwnd[nt[nt>0],:,:],axis=0)
-psi = np.average(sf[nt[nt>0],:,:],axis=0)
+    # CANCELLED - Set a zonally symmetric flow!
+
+    # uzon = np.mean(u,axis=1)
+    # uwndzon = np.mean(uwnd,axis=2)
+    # for lat in range(0,np.size(u,axis=0)) :
+    #     for tt in range(0,np.size(uwnd,axis=0)) :
+    #         uwnd[tt,:,:] = uwndzon[tt,lat]
+    #     u[lat,:] = uzon[lat]
+    # v = np.zeros_like(v)
+    # vwnd = np.zeros_like(vwnd)
+
+    #Only zonal wind
+
+    #v = np.zeros_like(v)
+    #vwnd = np.zeros_like(vwnd)
 
 
-# CANCELLED - Set a zonally symmetric flow!
+    # Convert to Mercator projection
 
-# uzon = np.mean(u,axis=1)
-# uwndzon = np.mean(uwnd,axis=2)
-# for lat in range(0,np.size(u,axis=0)) :
-#     for tt in range(0,np.size(uwnd,axis=0)) :
-#         uwnd[tt,:,:] = uwndzon[tt,lat]
-#     u[lat,:] = uzon[lat]
-# v = np.zeros_like(v)
-# vwnd = np.zeros_like(vwnd)
+    xm=lons*radius*dtr
+    xm360=360*radius*dtr
+    ym=lats+1  #array declaration
+    #ym[1:-2] = lats[1:-2]
+    ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
+    ym[0]=float('inf')
+    ym[-1]=ym[0]
 
-#Only zonal wind
+    # dy = np.gradient(ym)
+    # dx = np.gradient(xm)
 
-#v = np.zeros_like(v)
-#vwnd = np.zeros_like(vwnd)
+    coslat=np.cos(dtr*lats)
+    #coslat[0]=0   # a very small number is used instead
+    #coslat[-1]=0  # ----"""----
 
-
-# Convert to Mercator projection
-
-xm=lons*radius*dtr
-xm360=360*radius*dtr
-ym=lats+1  #array declaration
-#ym[1:-2] = lats[1:-2]
-ym[1:-2]=radius*np.log((1+np.sin(dtr*lats[1:-2]))/np.cos(dtr*lats[1:-2]));
-ym[0]=float('inf')
-ym[-1]=ym[0]
-
-# dy = np.gradient(ym)
-# dx = np.gradient(xm)
-
-coslat=np.cos(dtr*lats)
-#coslat[0]=0   # a very small number is used instead
-#coslat[-1]=0  # ----"""----
-
-# velocity in the Mercator projection
-um=u/coslat[:,None]
-vm=v/coslat[:,None]
+    # velocity in the Mercator projection
+    print np.shape(u)
+    um=u/coslat[:,None]
+    vm=v/coslat[:,None]
 
 
-# um checked!!!
+    # um checked!!!
 
-# Create a VectorWind instance to handle the computations.
-uwnd, uwnd_info = prep_data(uwnd, 'tyx')
-vwnd, vwnd_info = prep_data(vwnd, 'tyx')
-
-
-#w = VectorWind(uwnd, vwnd)
-# Compute absolute vorticity
-w = VectorWind(u, v)
-q = w.absolutevorticity()
-
-#qbar = q
-
-#qbar checked!!!
-
-#----BetaM---------------------------------------------------------------------
-print 'Calculate BetaM'
-
-cos2=coslat*coslat
-
-# dum, cosuy=w.gradient(u*cos2[:,None])
-# dum, cosuyy = w.gradient(cosuy/coslat[:,None])
-#
-# tmp = 2*e_omega *cos2/radius
-# BetaM=tmp[:,None]-cosuyy
-
-#alternative BetaM
-
-# for i in range(0,np.size(um,axis=1)) :
-#  cosuy_np = np.gradient(um[:,i]*cos2,2*pi*radius/360)
-#  cosuyy_np = np.gradient(um[:,i]/cos2,2*pi*radius/360)
-cosuy_np = np.zeros_like(um)
-cosuyy_np = np.zeros_like(um)
-#print dy
-#quit()
-dy = np.gradient(ym)
-cosuy_np[:,0] = np.gradient(um[:,0]*cos2,dy)
-cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
-for j in range(0,np.size(um,axis=0)) :
-    cosuy_np[j,:] = cosuy_np[j,0]
-    cosuyy_np[j,:] = cosuyy_np[j,0]
-
-tmp = 2*e_omega *cos2/radius
-BetaM_np = tmp[:,None]-cosuyy_np
-BetaM = BetaM_np
+    # Create a VectorWind instance to handle the computations.
+    # uwndT, uwnd_info = prep_data(uwnd, 'tyx')
+    # vwndT, vwnd_info = prep_data(vwnd, 'tyx')
 
 
+    #w = VectorWind(uwnd, vwnd)
+    # Compute absolute vorticity
+    w = VectorWind(u, v)
+    q = w.absolutevorticity()
 
-print "------------------------------"
-print "gradients"
-print np.version.version
-print "  "
-print "----- wind and q gradients ---------"
+    #qbar = q
 
-# umx, umy = w.gradient(u)
-# vmx, vmy = w.gradient(v)
+    #qbar checked!!!
 
-dx = np.gradient(xm)
-umx = np.zeros_like(um)
-vmx = np.zeros_like(vm)
-qx = np.zeros_like(q)
-qxx = np.zeros_like(q)
-qxy = np.zeros_like(q)
-for j in range(0,np.size(um,axis=0)) :
-    umx[j,:] = np.gradient(um[j,:],dx)
-    vmx[j,:] = np.gradient(vm[j,:],dx)
-    qx[j,:] = np.gradient(q[j,:],dx)
-    qxx[j,:] = np.gradient(qx[j,:],dx)
+    #----BetaM---------------------------------------------------------------------
+    print 'Calculate BetaM'
 
-dy = np.gradient(ym)
-umy = np.zeros_like(um)
-vmy = np.zeros_like(vm)
-qy = np.zeros_like(q)
-qyy = np.zeros_like(q)
-for i in range(0,np.size(um,axis=1)) :
-    umy[:,i] = np.gradient(um[:,i],dy)
-    vmy[:,i] = np.gradient(vm[:,i],dy)
-    qy[:,i] = np.gradient(q[:,i],dy)
-    ###qyy[:,i] = np.gradient(qy[:,i],dy)
-    ###  Alternately for d2qbar/dy2, arguable 'better'
-    qyy[:,i] = np.gradient(BetaM[:,i],dy)
-    qxy[:,i] = np.gradient(qx[:,i],dy)
+    cos2=coslat*coslat
 
+    # dum, cosuy=w.gradient(u*cos2[:,None])
+    # dum, cosuyy = w.gradient(cosuy/coslat[:,None])
+    #
+    # tmp = 2*e_omega *cos2/radius
+    # BetaM=tmp[:,None]-cosuyy
 
-# print "  "
-# print "----- q gradients ---------"
-#
-#Trick to calculate gradient for a scalar * cos(lat)
+    #alternative BetaM
 
-#qx, qy = w.gradient(qbar*coslat[:,None])
+    # for i in range(0,np.size(um,axis=1)) :
+    #  cosuy_np = np.gradient(um[:,i]*cos2,2*pi*radius/360)
+    #  cosuyy_np = np.gradient(um[:,i]/cos2,2*pi*radius/360)
+    cosuy_np = np.zeros_like(um)
+    cosuyy_np = np.zeros_like(um)
+    #print dy
+    #quit()
+    dy = np.gradient(ym)
+    cosuy_np[:,0] = np.gradient(um[:,0]*cos2,dy)
+    cosuyy_np[:,0] = np.gradient(cosuy_np[:,0]/cos2,dy)
+    for j in range(0,np.size(um,axis=0)) :
+        cosuy_np[j,:] = cosuy_np[j,0]
+        cosuyy_np[j,:] = cosuyy_np[j,0]
 
-# print "  "
-# print "----- q second derivatives ---------"
-
-#Trick to calculate gradient for a scalar * cos(lat)
-
-# qxx, qxy = w.gradient(qx*coslat[:,None])
-# qyx, qyy = w.gradient(qy*coslat[:,None])
+    tmp = 2*e_omega *cos2/radius
+    BetaM_np = tmp[:,None]-cosuyy_np
+    BetaM = BetaM_np
 
 
 
+    print "------------------------------"
+    print "gradients"
+    print np.version.version
+    print "  "
+    print "----- wind and q gradients ---------"
 
-#---NetCDF write---------------------------------------------------------------
-print("Start NetCDF writing")
+    # umx, umy = w.gradient(u)
+    # vmx, vmy = w.gradient(v)
 
-varlist = np.zeros(16, dtype = {'names': ['name', 'outname', 'data', 'scale'],
-                                'formats': ['a5', 'a5', '(241,480)f4', 'f4']} )
+    dx = np.gradient(xm)
+    umx = np.zeros_like(um)
+    vmx = np.zeros_like(vm)
+    qx = np.zeros_like(q)
+    qxx = np.zeros_like(q)
+    qxy = np.zeros_like(q)
+    for j in range(0,np.size(um,axis=0)) :
+        umx[j,:] = np.gradient(um[j,:],dx)
+        vmx[j,:] = np.gradient(vm[j,:],dx)
+        qx[j,:] = np.gradient(q[j,:],dx)
+        qxx[j,:] = np.gradient(qx[j,:],dx)
 
-
-varlist[0] = ("u","u",u,1)
-varlist[1] = ("v","v",v,1)
-varlist[2] = ("um","um",um,1)
-varlist[3] = ("vm","vm",vm,1)
-varlist[4] = ("umx","umx",umx,1.e-6)
-varlist[5] = ("umy","umy",umy,1.e-6)
-varlist[6] = ("vmx","vmx",vmx,1.e-6)
-varlist[7] = ("vmy","vmy",vmy,1.e-6)
-varlist[8] = ("qbar","q",q,1.e-4)
-varlist[9] = ("qx","qx",qx,1.e-12)
-varlist[10] = ("qy","qy",qy,1.e-11)
-varlist[11] = ("qxx","qxx",qxx,1.e-18)
-varlist[12] = ("qyy","qyy",qyy,1.e-18)
-varlist[13] = ("qxy","qxy",qxy,1.e-18)
-varlist[14] = ("BetaM","BetaM",BetaM,1.e-11)
-varlist[15] = ("sf","psi",psi,1.e+8)
-
-
-#Arr= [("u",100),("v",200)]
-#for Key,Value in Arr:
-#    print Key,"=",Value
-
-print 'u=',u[10,10]
-print 'v=',v[10,10]
-print 'um=',um[10,10]
-print 'vm=',vm[10,10]
-print 'umx=',umx[10,10]
-print 'umy=',umy[10,10]
-print 'vmx=',vmx[10,10]
-print 'vmy=',vmy[10,10]
-print 'q=',q[10,10]
-print 'qx=',qx[10,10]
-print 'qy=',qy[10,10]
-print 'qxx=',qxx[10,10]
-print 'qyy=',qyy[10,10]
-print 'qxy=',qxy[10,10]
-print 'Beta=',BetaM[10,10]
+    dy = np.gradient(ym)
+    umy = np.zeros_like(um)
+    vmy = np.zeros_like(vm)
+    qy = np.zeros_like(q)
+    qyy = np.zeros_like(q)
+    for i in range(0,np.size(um,axis=1)) :
+        umy[:,i] = np.gradient(um[:,i],dy)
+        vmy[:,i] = np.gradient(vm[:,i],dy)
+        qy[:,i] = np.gradient(q[:,i],dy)
+        ###qyy[:,i] = np.gradient(qy[:,i],dy)
+        ###  Alternately for d2qbar/dy2, arguable 'better'
+        qyy[:,i] = np.gradient(BetaM[:,i],dy)
+        qxy[:,i] = np.gradient(qx[:,i],dy)
 
 
-for iv in range(varlist['name'].size) :
+    # print "  "
+    # print "----- q gradients ---------"
+    #
+    #Trick to calculate gradient for a scalar * cos(lat)
+
+    #qx, qy = w.gradient(qbar*coslat[:,None])
+
+    # print "  "
+    # print "----- q second derivatives ---------"
+
+    #Trick to calculate gradient for a scalar * cos(lat)
+
+    # qxx, qxy = w.gradient(qx*coslat[:,None])
+    # qyx, qyy = w.gradient(qy*coslat[:,None])
 
 
-    ncvar = varlist["outname"][iv]
-    print 'ncvar=',ncvar
-    ftest = '../output/zon_var/test.%s.nc' % (varlist["outname"][iv])
-    ncout = Dataset(ftest, 'w', format='NETCDF4')
-    ncout.description = "TEST %s" % (ftest)
-
-    # Using our previous dimension info, we can create the new time dimension
-    # Even though we know the size, we are going to set the size to unknown
-
-    dimnam=('longitude','latitude','time')
-    varnam=['longitude','latitude','time',ncvar]
-
-    ncout.createDimension(dimnam[0], lons.size)
-    ncout.createDimension(dimnam[1], lats.size)
-    #ncout.createDimension(dimnam[2], None)
-
-    for nv in range(0, 2) :
-        ncout_var = ncout.createVariable(varnam[nv], nc.variables[varnam[nv]].dtype,dimnam[nv])
-        for ncattr in nc.variables[varnam[nv]].ncattrs():
-            ncout_var.setncattr(ncattr, nc.variables[varnam[nv]].getncattr(ncattr))
-    #print(nc.variables['latitude'].ncattrs())
-
-    ncout.variables[dimnam[0]][:] = lons
-    ncout.variables[dimnam[1]][:] = lats
-    #ncout.variables[dimnam[2]][:] = time
-    #ncout.variables[dimnam[2]][:] = 1
-
-    ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
-    #ncout_var.long_name = 'streamfunction'
-    # var_scale = varlist["scale"][iv]
-    # var_add   = 0.
-    ncout_var.scale_factor = varlist["scale"][iv]
-    ncout_var.add_offset   = 0.
-    #!!!automatically takes scale and offset into account
-    #!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
-    #ncout_var.units        = 'not specified'
-    ncout_var.units        = 'scale   %s' % varlist["scale"][iv]
-
-    #print qx.shape
-    #print ncout_var.shape
-    ncout_var[:] = varlist["data"][iv]
 
 
-    ncout.close()
+    #---NetCDF write---------------------------------------------------------------
+    print("Start NetCDF writing")
+
+    varlist = np.zeros(16, dtype = {'names': ['name', 'outname', 'data', 'scale'],
+                                    'formats': ['a5', 'a5', '(241,480)f4', 'f4']} )
+
+
+    varlist[0] = ("u","u",u,1)
+    varlist[1] = ("v","v",v,1)
+    varlist[2] = ("um","um",um,1)
+    varlist[3] = ("vm","vm",vm,1)
+    varlist[4] = ("umx","umx",umx,1.e-6)
+    varlist[5] = ("umy","umy",umy,1.e-6)
+    varlist[6] = ("vmx","vmx",vmx,1.e-6)
+    varlist[7] = ("vmy","vmy",vmy,1.e-6)
+    varlist[8] = ("qbar","q",q,1.e-4)
+    varlist[9] = ("qx","qx",qx,1.e-12)
+    varlist[10] = ("qy","qy",qy,1.e-11)
+    varlist[11] = ("qxx","qxx",qxx,1.e-18)
+    varlist[12] = ("qyy","qyy",qyy,1.e-18)
+    varlist[13] = ("qxy","qxy",qxy,1.e-18)
+    varlist[14] = ("BetaM","BetaM",BetaM,1.e-11)
+    varlist[15] = ("sf","psi",psi,1.e+8)
+
+
+    #Arr= [("u",100),("v",200)]
+    #for Key,Value in Arr:
+    #    print Key,"=",Value
+
+    print 'u=',u[10,10]
+    print 'v=',v[10,10]
+    print 'um=',um[10,10]
+    print 'vm=',vm[10,10]
+    print 'umx=',umx[10,10]
+    print 'umy=',umy[10,10]
+    print 'vmx=',vmx[10,10]
+    print 'vmy=',vmy[10,10]
+    print 'q=',q[10,10]
+    print 'qx=',qx[10,10]
+    print 'qy=',qy[10,10]
+    print 'qxx=',qxx[10,10]
+    print 'qyy=',qyy[10,10]
+    print 'qxy=',qxy[10,10]
+    print 'Beta=',BetaM[10,10]
+
+
+    # for iv in range(varlist['name'].size) :
+    for iv in range(2) :
+
+        ncvar = varlist["outname"][iv]
+        print 'ncvar=',ncvar
+        ftest = '../output/matlab/yearly1/%s.%d.nc' % (varlist["outname"][iv],iy)
+        ncout = Dataset(ftest, 'w', format='NETCDF4')
+        ncout.description = "TEST %s" % (ftest)
+
+        # Using our previous dimension info, we can create the new time dimension
+        # Even though we know the size, we are going to set the size to unknown
+
+        dimnam=('longitude','latitude','time')
+        varnam=['longitude','latitude','time',ncvar]
+
+        ncout.createDimension(dimnam[0], lons.size)
+        ncout.createDimension(dimnam[1], lats.size)
+        #ncout.createDimension(dimnam[2], None)
+
+        for nv in range(0, 2) :
+            ncout_var = ncout.createVariable(varnam[nv], nc.variables[varnam[nv]].dtype,dimnam[nv])
+            for ncattr in nc.variables[varnam[nv]].ncattrs():
+                ncout_var.setncattr(ncattr, nc.variables[varnam[nv]].getncattr(ncattr))
+        #print(nc.variables['latitude'].ncattrs())
+
+        ncout.variables[dimnam[0]][:] = lons
+        ncout.variables[dimnam[1]][:] = lats
+        #ncout.variables[dimnam[2]][:] = time
+        #ncout.variables[dimnam[2]][:] = 1
+
+        ncout_var = ncout.createVariable(ncvar, 'f',dimnam[1::-1])
+        #ncout_var.long_name = 'streamfunction'
+        # var_scale = varlist["scale"][iv]
+        # var_add   = 0.
+        ncout_var.scale_factor = varlist["scale"][iv]
+        ncout_var.add_offset   = 0.
+        #!!!automatically takes scale and offset into account
+        #!!! no need for: ncout_sf[:] = (sf-sf_add)/sf_scale
+        #ncout_var.units        = 'not specified'
+        ncout_var.units        = 'scale   %s' % varlist["scale"][iv]
+
+        #print qx.shape
+        #print ncout_var.shape
+        ncout_var[:] = varlist["data"][iv]
+
+
+        ncout.close()
 nc.close()
 quit()
 

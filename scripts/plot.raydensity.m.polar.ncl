@@ -15,10 +15,13 @@ period = (/"Inf"/)
 
 ;lats = -ispan(-80, 80, 5)
 ;lons = ispan(60, 360, 90)
-lats = (/72/)
-lons = (/160/)
+lats = (/72,72/)
+lons = (/40,160/)
 
-years = ispan(1980,1989,1)
+do iy = 1981,2016,100
+
+;years = ispan(iy,iy+9,1)
+years = ispan(iy,iy,1)
 nyr = dimsizes(years)
 
 longrid = fspan(0.,359.,360)
@@ -29,10 +32,10 @@ roots = ispan(1,3,1)
 ;onto grid parameters
 ngc0 = 10 ;number of points for interpolation (gcdist)
 opt          = True
-opt@binx_min= -.5
-opt@binx_max= 359.5
-opt@biny_min= -90.5
-opt@biny_max=  90.5
+opt@binx_min = -.5
+opt@binx_max = 359.5
+opt@biny_min = -90.5
+opt@biny_max =  90.5
 
 rayfreq = new((/181,360/),integer)
 rayfreq!0 = "lat"
@@ -64,7 +67,7 @@ do ssn = 0,0
        wks  = gsn_open_wks("png",fout)
 
        res                    = True
-       ;res@gsnMaximize        = True         ; make ps, pdf, eps, .. large
+       ;res@gsnMaximize       = True         ; make ps, pdf, eps, .. large
        res@gsnDraw            = False        ; don't draw plot yet
        res@gsnFrame           = False        ; don't advance frame yet
 
@@ -277,5 +280,7 @@ do ssn = 0,0
    end do  ;lat
  end do  ;ip
 end do   ; ssn
+
+end do   ; iy
 
 end
