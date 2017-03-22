@@ -5,7 +5,7 @@
 begin
 
 npts = 21
-col = (/"black","green","red","orange","blue","hotpink","olivedrab","cadetblue4","coral4","cyan1"/)
+col = (/"cyan1","green","red","orange","blue","hotpink","olivedrab","cadetblue4","coral4","cyan1"/)
 ;dum2 = dum1
 
 season=(/"DJF","JJA"/)
@@ -19,7 +19,20 @@ lats = (/72,72/)
 lons = (/40,160/)
 
 ;years = ispan(iy,iy+9,1)
-years = (/1981,1985/)
+
+;for 72N 40E
+;years = (/1981,1985/)
+;years = (/2015,2010/)
+;years = (/2000,2003/)
+
+;for 72N 160E
+;years = (/1987,2014/)
+;years = (/1990,2015/)
+;years = (/1994,1990/)
+years = (/2016,2012/)
+;years = (/2010,2015/)
+;years = (/2010,2015/)
+;years = (/2010,2015/)
 nyr = dimsizes(years)
 
 longrid = fspan(0.,359.,360)
@@ -155,8 +168,8 @@ ytxt = yleg
 do ssn = 0,0
  do ip    = 0, dimsizes(period)-1
   p = period(ip)
-   do lat  = 0,0  ;dimsizes(lats)-1
-   do lon  = 0,0  ;dimsizes(lons)-1
+   do lat  = 1,1  ;dimsizes(lats)-1
+   do lon  = 1,1  ;dimsizes(lons)-1
     do k =  1, 6
      fout = "../output/matlab/yearly1/raysP_"+season(ssn)+years(0)+"."+years(nyr-1)+"_"+lats(lat)+"N_"+lons(lon)+"E"+"_period"+p+"_k"+k
      rayfreq = 0
