@@ -172,8 +172,8 @@ do ssn = 0,0
    do ic = 0, ncase(ireg)-1
 
    ;wind
-   fin0 = addfile("../output/matlab/yearly1/vars"+lev+"."+years(ireg,ic,0)+".nc","r")
-   fin1 = addfile("../output/matlab/yearly1/vars"+lev+"."+years(ireg,ic,1)+".nc","r")
+   fin0 = addfile("../output/matlab/yearly/vars/vars"+lev+"."+years(ireg,ic,0)+".nc","r")
+   fin1 = addfile("../output/matlab/yearly/vars/vars"+lev+"."+years(ireg,ic,1)+".nc","r")
 
 
 
@@ -193,6 +193,15 @@ do ssn = 0,0
    hgt1 = fin1->hgt
    RWS1 = fin1->RWS
 
+   ; smoothing
+   nsmth = 5; number of smothing attempts
+   do is = 0,nsmth-1
+    RWS0 = smth9(RWS0, 0.5,  0.25, True)
+    RWS1 = smth9(RWS1, .5, 0.25, True)
+   end do
+
+
+
    dhgt = hgt1 - hgt0
    dRWS = RWS1 - RWS0
 
@@ -211,7 +220,7 @@ do ssn = 0,0
 
 
     do k =  1, 6
-     ;fout = "../output/matlab/yearly1/raysP_"+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
+     ;fout = "../output/matlab/yearly/combplots/raysP_"+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
      rayfreq = 0
      dumu = new(dimsizes(roots)*dimsizes(years(ireg,ic,:)), graphic)
      dumv = new(dimsizes(roots)*dimsizes(years(ireg,ic,:)), graphic)
@@ -229,7 +238,7 @@ do ssn = 0,0
        do iv = 0,1
 
        if (iv.eq.0)then
-        fout = "../output/matlab/yearly1/raysP_wind."+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
+        fout = "../output/matlab/yearly/combplots/raysP_wind."+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
         print (fout)
         wks  = gsn_open_wks("png",fout)
 
@@ -252,7 +261,7 @@ do ssn = 0,0
          plot(5) = gsn_csm_contour_map_polar(wks,dv,res)
       end if
       if (iv.eq.1)then
-        fout = "../output/matlab/yearly1/raysP_hgt_RWS."+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
+        fout = "../output/matlab/yearly/combplots/raysP_hgt_"+nsmth+"sm9RWS."+season(ssn)+years(ireg,ic,0)+"."+years(ireg,ic,1)+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k
         print (fout)
         wks  = gsn_open_wks("png",fout)
 
@@ -296,7 +305,7 @@ do ssn = 0,0
       yr = years(ireg,ic,iyr)
       do root =  roots(0),roots(dimsizes(roots)-1)
 
-      fin = "../output/matlab/yearly1/ray_"+season(ssn)+yr+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k+"_root"+root
+      fin = "../output/matlab/yearly/rays/ray_"+season(ssn)+yr+"_"+lats(ireg)+"N_"+lons(ireg)+"E"+"_period"+p+"_k"+k+"_root"+root
       print(fin)
       if (fileexists(fin)) then
        print("Raypath from "+fin)
