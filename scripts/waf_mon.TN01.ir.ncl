@@ -50,7 +50,7 @@ lyear = 1980
 lmon = 12
 
 ;  direcotry name
-diri = "/Users/irudeva/work/DATA/ERAint/Plev/"
+diri = "/Users/irina/work/DATA/ERAint/Plev/"
 
 
 ; monthly climatology data
@@ -172,17 +172,10 @@ do istep = 0,nctime-1
 end do
 
 printVarSummary(zvararr)
-szvar = zvararr(fstep:lstep,:,:,:)
-
-status_exit(1)
 
 ;height anomaly
+szvar = zvararr(fstep:lstep,:,:,:)
 zavar = szvar - clzvar
-; delete(czvar)
-; delete(bzvar)
-; delete(btvar)
-; delete(buvar)
-; delete(bvvar)
 
 ;  Gas constant
 gc=290
@@ -197,6 +190,7 @@ sclhgt=8000.
 
 ; pi
 pi = atan(1.0)*4.
+
 
 ; Coriolis parameter
 f =  2.*2.*pi/(60.*60.*24.)*sin(pi/180. * lat(:))
@@ -213,6 +207,16 @@ end do
 
 ; cosine
 coslat = cos(lat(:)*pi/180.)
+
+; 1-D -> 4-D
+printVarSummary(zvararr_ts)
+printVarSummary(level)
+leveltmp = conform_dims(dimsizes(zvararr_ts),level,1)
+coslattmp = conform_dims(dimsizes(zvararr_ts),coslat,2)
+ftmp = conform_dims(dimsizes(zvararr_ts),f,2)
+
+status_exit(1)
+
 
 ; 1-D -> 4-D
 leveltmp = conform_dims(dimsizes(zvar),level,1)
