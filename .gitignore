@@ -8,3 +8,4 @@ scripts/old
 *.mat
 *.swp
 *.m~
+*.doc*

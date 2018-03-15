@@ -46,7 +46,7 @@ fyear = 1979
 fmon = 1
 
 ; The last date of calculation
-lyear = 1980
+lyear = 2017
 lmon = 12
 
 ;  direcotry name
@@ -86,6 +86,10 @@ do iyr = fyear, lyear
   else
    vvar = clfile->v
   end if
+  ; if (iyr.eq.2017) then
+  ;   print(vvar)
+  ;   status_exit(1)
+  ; end if
   ; vvar_ts = vvar(level|:,latitude|:,longitude|:,time|:)
 
   if (iyr.eq.fyear) then
@@ -117,6 +121,7 @@ do iyr = fyear, lyear
    delete(vvararr1)
   end if
 
+
 end do
 
 ;monthly climatology
@@ -128,8 +133,7 @@ vvararr_ts = vvararr(level|:,latitude|:,longitude|:,time|:)
 z_clmon = clmMonLLLT( zvararr_ts )
 t_clmon = clmMonLLLT( tvararr_ts )
 u_clmon = clmMonLLLT( uvararr_ts )
-v_clmon = clmMonLLLT( zvararr_ts )
-
+v_clmon = clmMonLLLT( vvararr_ts )
 
 ;dates, lev and lat, lon
 time = zvararr&time
@@ -172,17 +176,10 @@ do istep = 0,nctime-1
 end do
 
 printVarSummary(zvararr)
-szvar = zvararr(fstep:lstep,:,:,:)
-
-status_exit(1)
 
 ;height anomaly
+szvar = zvararr(fstep:lstep,:,:,:)
 zavar = szvar - clzvar
-; delete(czvar)
-; delete(bzvar)
-; delete(btvar)
-; delete(buvar)
-; delete(bvvar)
 
 ;  Gas constant
 gc=290
@@ -215,25 +212,27 @@ end do
 coslat = cos(lat(:)*pi/180.)
 
 ; 1-D -> 4-D
-leveltmp = conform_dims(dimsizes(zvar),level,1)
-coslattmp = conform_dims(dimsizes(zvar),coslat,2)
-ftmp = conform_dims(dimsizes(zvar),f,2)
+printVarSummary(zvararr)
+leveltmp = conform_dims(dimsizes(zvararr),level,1)
+coslattmp = conform_dims(dimsizes(zvararr),coslat,2)
+ftmp = conform_dims(dimsizes(zvararr),f,2)
 
 ; vertical gradient of potential temperature  (K/m)
-dthetadz = center_finite_diff_n(ctvar*(1000./leveltmp)^0.286,-sclhgt*log(level/1000),False,0,1)
+dthetadz = center_finite_diff_n(cltvar*(1000./leveltmp)^0.286,-sclhgt*log(level/1000),False,0,1)
 
 ; Brunt Vaisala frequency
 NN = (gc*(leveltmp/1000.)^0.286)/sclhgt * dthetadz
-NN@_FillValue = ctvar@_FillValue
+NN@_FillValue = cltvar@_FillValue
 NN = where(NN .gt. 0, NN, NN@_FillValue)
 
 ; magnitude of climatological wind
-cumag = sqrt(cuvar^2 + cvvar^2)
-cumag@_FillValue = cuvar@_FillValue
+cumag = sqrt(cluvar^2 + clvvar^2)
+cumag@_FillValue = cluvar@_FillValue
 cumag = where(cumag .gt. 0, cumag, cumag@_FillValue)
 
 ; QG steam function for anomaly
-psidev = zavar*ga /ftmp
+; psidev = zavar*ga /ftmp
+psidev = zavar /ftmp  ; as zvar is alreeady Hgt*g
 
 ;dpsidev/dlon
 dpsidevdlon =  center_finite_diff_n(psidev,lon*pi/180.,True,0,3)
@@ -271,13 +270,13 @@ zvterm = (dpsidevdlat*dpsidevdz - psidev*ddpsidevdlatz)
 ;  by using mask
 
 ;x-component of (38)
-Fx = mask( leveltmp/1000./(2.*cumag*re*re)*( cuvar/coslattmp * xuterm + cvvar * xvterm), cuvar.lt.5,False)
+Fx = mask( leveltmp/1000./(2.*cumag*re*re)*( cluvar/coslattmp * xuterm + clvvar * xvterm), cluvar.lt.5,False)
 
 ;y-component
-Fy = mask(leveltmp/1000./(2.*cumag*re*re)*( cuvar*xvterm + coslattmp*cvvar*yvterm),  cuvar.lt.5,False)
+Fy = mask(leveltmp/1000./(2.*cumag*re*re)*( cluvar*xvterm + coslattmp*clvvar*yvterm),  cluvar.lt.5,False)
 
 ;z-component
-Fz = mask(leveltmp/1000.*ftmp*ftmp/(2.*cumag*NN*re)*(cuvar*zuterm + coslattmp*cvvar*zvterm), cuvar.lt.5, False)
+Fz = mask(leveltmp/1000.*ftmp*ftmp/(2.*cumag*NN*re)*(cluvar*zuterm + coslattmp*clvvar*zvterm), cluvar.lt.5, False)
 
 ; for output
 Fx!0 = "time"
@@ -316,6 +315,16 @@ psidev&lat = lat
 psidev!3 = "lon"
 psidev&lon = lon
 
+zdev = zavar/ga
+zdev!0 = "time"
+zdev&time = ctime
+zdev!1 = "level"
+zdev&level = level
+zdev!2 = "lat"
+zdev&lat = lat
+zdev!3 = "lon"
+zdev&lon = lon
+
 NN!0 = "time"
 NN&time = ctime
 NN!1 = "level"
@@ -325,25 +334,48 @@ NN&lat = lat
 NN!3 = "lon"
 NN&lon = lon
 
+copy_VarMeta(zdev, clzvar)
+copy_VarMeta(Fx, cltvar)
+copy_VarMeta(Fx, cluvar)
+copy_VarMeta(Fx, clvvar)
+
+
 Fx@units = "m^2/s^2"
 Fx@units = "m^2/s^2"
 Fz@units = "m^2/s^2"
 
 psidev@units = "m^2/s"
 
+zdev@units = "m**2 s**-2"
+
 NN@units = "1/s^2"
 
-dirout = "../output"
-ncFx =     addfile(dirout+"TN2001-Fx.monthly.1990.nc","c")
-ncFy =     addfile(dirout+"TN2001-Fy.monthly.1990.nc","c")
-ncFz =     addfile(dirout+"TN2001-Fz.monthly.1990.nc","c")
-ncpsidev = addfile(dirout+"psidev.monthly.1990.nc","c")
-ncNN =     addfile(dirout+"NN.monthly.1990.nc","c")
+dirout = "../output/WAF/"
+ncWAF =     addfile(dirout+"WAF.mon"+fyear+"-"+lyear+".nc","c")
+; ncFx =     addfile(dirout+"Fx.mon.nc","c")
+; ncFy =     addfile(dirout+"Fy.mon.nc","c")
+; ncFz =     addfile(dirout+"Fz.mon.nc","c")
+; ncZdev   = addfile(dirout+"Zdev.mon.nc","c")
+; ncpsidev = addfile(dirout+"psidev.mon.nc","c")
+; ncNN =     addfile(dirout+"NN.mon.nc","c")
 
-ncFx->Fx = Fx
-ncFy->Fy = Fy
-ncFz->Fz = Fz
-ncpsidev->psidev = psidev
+ncWAF->Fx = Fx
+ncWAF->Fy = Fy
+ncWAF->Fz = Fz
+; ncWAF->psidev = psidev
+ncWAF->Zdev = zdev
+; ncFx->Fx = Fx
+; ncFy->Fy = Fy
+; ncFz->Fz = Fz
+; ncpsidev->psidev = psidev
+; ncZdev->Zdev = zdev
 
-ncNN->NN = NN
+; ncNN->NN = NN
+
+; ncWAF->clzvar=clzvar
+; ncWAF->ctvar=cltvar
+ncWAF->cluvar=cluvar
+ncWAF->clvvar=clvvar
+
+
 end
