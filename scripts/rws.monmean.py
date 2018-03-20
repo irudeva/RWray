@@ -25,66 +25,76 @@ from windspharm.examples import example_data_path
 
 gravacc =  9.80665
 
-bgs   = 'DJF'
-if bgs == 'DJF':
-    bgmon = np.array([12, 1, 2])
-elif bgs == 'JJA':
-    bgmon = np.array([6,7,8])
+# The first date of calculation
+fyear = 1979
+fmon = 1
+
+# The last date of calculation
+lyear = 1979
+lmon = 12
+
+# direcotry name
+diri = "/Users/irudeva/work/DATA/ERAint/Plev/"
+
+# bgs   = 'DJF'
+# if bgs == 'DJF':
+#     bgmon = np.array([12, 1, 2])
+# elif bgs == 'JJA':
+#     bgmon = np.array([6,7,8])
 
 
 lev = "200"  #hgt level for wind
 lev1 = "300"  # hgt level
 
+dimnam=('longitude','latitude','level','time')
+varnam=['longitude','latitude','level','time',"z","t",'u','v']
 
+for iyr in range(1979,lyear+1) :
+    fw = "{}erain.hgt_air_wind.monmean.{:d}.nc".format(diri,iyr)
+    print "Reading wind from", fw
+    nc = Dataset(fw, 'r')
+    v=0
+    for var in varnam:
+        if nc.variables[varnam[v]].name != var:
+            print "Variables don't agree", var, nc.variables[varnam[v]].name, v
+            exit()
+        v += 1
 
-fw = "../data/wnd%s.mnth.erain.nc" % (lev)
-fhgt = "../data/hgt%s.mnth.erain.nc" % (lev1)
-
-dimnam=('longitude','latitude','time')
-varnam=['longitude','latitude','time','u','v']
-
-print "Reading wind from", fw
-nc = Dataset(fw, 'r')
-v=0
-for var in varnam:
-    if nc.variables[varnam[v]].name != var:
-        print "Variables don't agree", var, nc.variables[varnam[v]].name, v
-        exit()
-    v += 1
-
-lons = nc.variables[varnam[0]][:]
-lats = nc.variables[varnam[1]][:]
-time = nc.variables[varnam[2]][:]
-uwnd = nc.variables[varnam[3]][:]
-vwnd = nc.variables[varnam[4]][:]
+    lons = nc.variables[varnam[0]][:]
+    lats = nc.variables[varnam[1]][:]
+    levs = nc.variables[varnam[2]][:]
+    time = nc.variables[varnam[3]][:]
+    z    = nc.variables[varnam[4]][:]
+    uwnd = nc.variables[varnam[6]][:]
+    vwnd = nc.variables[varnam[7]][:]
 
 if(lats[0]<lats[-1]):
     print "ERROR: make sure that lat dim is N -> S"
     exit()
 
-print "Reading hgt from", fhgt
-nc1 = Dataset(fhgt, 'r')
-v=0
-for var in varnam[0:2]:
-    if nc1.variables[varnam[v]].name != var:
-        print "ERROR reading ",fhgt,":"
-        print "Variables don't agree", var,"!=",nc.variables[varnam[v]].name
-        exit()
-    v += 1
-lons1 = nc1.variables[varnam[0]][:]
-lats1 = nc1.variables[varnam[1]][:]
-time1 = nc1.variables[varnam[2]][:]
-z = nc1.variables['z'][:]
-
-if (lons1!=lons).any():
-    print "ERROR wind.lons != hgt.lons"
-    exit()
-if (lats1!=lats).any():
-    print "ERROR wind.lats != hgt.lats"
-    exit()
-if (lons1!=lons).any():
-    print "ERROR wind.time != hgt.time"
-    exit()
+# print "Reading hgt from", fhgt
+# nc1 = Dataset(fhgt, 'r')
+# v=0
+# for var in varnam[0:2]:
+#     if nc1.variables[varnam[v]].name != var:
+#         print "ERROR reading ",fhgt,":"
+#         print "Variables don't agree", var,"!=",nc.variables[varnam[v]].name
+#         exit()
+#     v += 1
+# lons1 = nc1.variables[varnam[0]][:]
+# lats1 = nc1.variables[varnam[1]][:]
+# time1 = nc1.variables[varnam[2]][:]
+# z = nc1.variables['z'][:]
+#
+# if (lons1!=lons).any():
+#     print "ERROR wind.lons != hgt.lons"
+#     exit()
+# if (lats1!=lats).any():
+#     print "ERROR wind.lats != hgt.lats"
+#     exit()
+# if (lons1!=lons).any():
+#     print "ERROR wind.time != hgt.time"
+#     exit()
 
 #  Time
 dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
@@ -92,8 +102,7 @@ dt_time = [datetime.date(1900, 1, 1) + datetime.timedelta(hours=int(t))\
 
 nt=np.array([0 for i in range(time.size)])
 
-# for iy in range(1980,2017) :
-for iy in range(1980,1981) :
+# for iy in range(1980,1981) :
     nt = nt*0
     i =0
     # for yr in range(iy,iy+1) :
