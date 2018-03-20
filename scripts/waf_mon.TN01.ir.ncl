@@ -50,7 +50,7 @@ lyear = 2017
 lmon = 12
 
 ;  direcotry name
-diri = "/Users/irudeva/work/DATA/ERAint/Plev/"
+diri = "/Users/irina/work/DATA/ERAint/Plev/"
 
 
 ; monthly climatology data
@@ -195,6 +195,7 @@ sclhgt=8000.
 ; pi
 pi = atan(1.0)*4.
 
+
 ; Coriolis parameter
 f =  2.*2.*pi/(60.*60.*24.)*sin(pi/180. * lat(:))
 f!0 = "lat"
@@ -215,7 +216,20 @@ coslat = cos(lat(:)*pi/180.)
 printVarSummary(zvararr)
 leveltmp = conform_dims(dimsizes(zvararr),level,1)
 coslattmp = conform_dims(dimsizes(zvararr),coslat,2)
-ftmp = conform_dims(dimsizes(zvararr),f,2)
+ftmp = conform_dims(dimsizes(zvararr),f,2printVarSummary(zvararr_ts)
+printVarSummary(level)
+leveltmp = conform_dims(dimsizes(zvararr_ts),level,1)
+coslattmp = conform_dims(dimsizes(zvararr_ts),coslat,2)
+ftmp = conform_dims(dimsizes(zvararr_ts),f,2)
+
+status_exit(1)
+
+
+; 1-D -> 4-D
+leveltmp = conform_dims(dimsizes(zvar),level,1)
+coslattmp = conform_dims(dimsizes(zvar),coslat,2)
+ftmp = conform_dims(dimsizes(zvar),f,2)
+
 
 ; vertical gradient of potential temperature  (K/m)
 dthetadz = center_finite_diff_n(cltvar*(1000./leveltmp)^0.286,-sclhgt*log(level/1000),False,0,1)

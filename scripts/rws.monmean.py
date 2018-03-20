@@ -30,7 +30,7 @@ fyear = 1979
 fmon = 1
 
 # The last date of calculation
-lyear = 1979
+lyear = 1980
 lmon = 12
 
 # direcotry name
@@ -60,18 +60,37 @@ for iyr in range(1979,lyear+1) :
             exit()
         v += 1
 
-    lons = nc.variables[varnam[0]][:]
-    lats = nc.variables[varnam[1]][:]
-    levs = nc.variables[varnam[2]][:]
-    time = nc.variables[varnam[3]][:]
-    z    = nc.variables[varnam[4]][:]
-    uwnd = nc.variables[varnam[6]][:]
-    vwnd = nc.variables[varnam[7]][:]
+    if (iyr == fyear) :
+        lons = nc.variables[varnam[0]][:]
+        lats = nc.variables[varnam[1]][:]
+        levs = nc.variables[varnam[2]][:]
+        time = nc.variables[varnam[3]][:]
+        z    = nc.variables[varnam[4]][:]
+        uwnd = nc.variables[varnam[6]][:]
+        vwnd = nc.variables[varnam[7]][:]
+    else:
+        if (nc.variables[varnam[0]][:]!=lons).any():
+            print "ERROR lons != old lons in {:d}".format(iyr)
+            exit()
+        if (nc.variables[varnam[1]][:]!=lats).any():
+            print "ERROR lats != old lats in {:d}".format(iyr)
+            exit()
+        if (nc.variables[varnam[2]][:]!=levs).any():
+            print "ERROR levs != old levs in {:d}".format(iyr)
+            exit()
+        time.extend(nc.variables[varnam[3]][:])
+        z .extend(nc.variables[varnam[4]][:])
+        uwnd.extend(nc.variables[varnam[6]][:])
+        vwnd.extend(nc.variables[varnam[7]][:])
+
+
 
 if(lats[0]<lats[-1]):
     print "ERROR: make sure that lat dim is N -> S"
     exit()
 
+
+exit()
 # print "Reading hgt from", fhgt
 # nc1 = Dataset(fhgt, 'r')
 # v=0
