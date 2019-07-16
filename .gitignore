@@ -4,6 +4,7 @@ output/
 scripts/matlab/spherepack
 scripts/tmp*
 scripts/old
+scripts_old*
 
 *.mat
 *.swp
