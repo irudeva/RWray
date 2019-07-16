@@ -5,6 +5,7 @@ scripts/matlab/spherepack
 scripts/tmp*
 scripts/old
 scripts_old*
+RWpaper/
 
 *.mat
 *.swp
